@@ -4,10 +4,10 @@
 
 1. Üye Olma
 API Metodu: POST /auth/register
-Açıklama: Kullanıcıların sisteme kayıt olmasını sağlar. İsim, email ve şifre alınarak veritabanında yeni bir kullanıcı oluşturulur.
+Açıklama: Kullanıcıların sisteme kayıt olmasını sağlar. İsim, email, telefon numarası, cinsiyet*, doğum tarihi* ve şifre alınarak veritabanında yeni bir kullanıcı oluşturulur.
 2. Kullanıcı Girişi (Login)
 API Metodu: POST /auth/login
-Açıklama: Kullanıcının email ve şifresiyle doğrulama yapıp sisteme girmesini sağlar. Başarılı girişte Token (yetki belgesi) döndürür.
+Açıklama: Kullanıcının hem email veya telefon numarası hemde şifresiyle sisteme girmesini sağlar. Başarılı girişte Token (yetki belgesi) döndürür.
 3. Profil Görüntüleme
 API Metodu: GET /users/{userId}
 Açıklama: Kullanıcının profil bilgilerini (ad, email, katılım tarihi) getiren listeleme/okuma metodudur.
@@ -85,7 +85,7 @@ API Metodu: POST /cars/{carId}/likes
 Açıklama: Kullanıcıların bir ilana beğeni atmasını sağlayarak ilanın popülerliğini artırır.
 3. Yorumları Listeleme
 API Metodu: GET /cars/{carId}/comments
-Açıklama: Bir ilana yapılmış olan tüm yorumların tarih sırasına ve yorumu yapan kişiye göre listelenmesini sağlar.
+Açıklama: Bir ilana yapılmış olan tüm yorumların tarih sırasına göre listelenmesini sağlar.
 4. Paylaşım Linki Üretme
 API Metodu: GET /cars/{carId}/share
 Açıklama: İlanın başka platformlarda (WhatsApp vb.) paylaşılabilmesi için benzersiz ve izlenebilir bir kısa link üretilmesini sağlar.
@@ -94,7 +94,4 @@ API Metodu: PUT /comments/{commentId}
 Açıklama: Kullanıcının daha önceden yaptığı bir yorumdaki yazım hatalarını veya içeriği düzenlemesini sağlar.
 6. Yorum Silme
 API Metodu: DELETE /comments/{commentId}
-Açıklama: Kullanıcının kendi yorumunu veya ilan sahibinin kendi ilanındaki istenmeyen bir yorumu silmesini sağlar.
-7. Beğeniyi Kaldırma (Unlike)
-API Metodu: DELETE /cars/{carId}/likes
-Açıklama: Kullanıcının daha önceden beğendiği bir ilandan beğenisini geri çekmesini sağlar.
+Açıklama: Kullanıcının kendi yorumunu silmesini sağlar.
