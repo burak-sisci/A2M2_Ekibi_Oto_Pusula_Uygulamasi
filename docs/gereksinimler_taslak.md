@@ -11,15 +11,15 @@ Açıklama: Kullanıcının hem email veya telefon numarası hemde şifresiyle s
 3. Profil Görüntüleme
 API Metodu: GET /users/{userId}
 Açıklama: Kullanıcının profil bilgilerini (ad, email, katılım tarihi) getiren listeleme/okuma metodudur.
-4. Tüm Kullanıcıları Listeleme
-API Metodu: GET /users
-Açıklama: Sistemdeki tüm kayıtlı kullanıcıların liste halinde getirilmesini sağlar (Genellikle admin paneli için kullanılır).
-5. Profil Güncelleme
+4. Profil Güncelleme
 API Metodu: PUT /users/{userId}
 Açıklama: Kullanıcının şifre, telefon veya isim gibi kişisel bilgilerini değiştirmesini/güncellemesini sağlar.
-6. Hesap Silme
+5. Hesap Silme
 API Metodu: DELETE /users/{userId}
 Açıklama: Kullanıcının kendi isteğiyle hesabını ve sistemdeki tüm kişisel verilerini kalıcı olarak silmesini sağlar.
+6. Kullanıcı Çıkışı (Logout)
+API Metodu: POST /auth/logout
+Açıklama: Sisteme giriş yapmış olan kullanıcının oturumunu güvenli bir şekilde sonlandırmasını sağlar. Kullanıcının cihazındaki aktif erişim token'ı (yetki belgesi) silinerek/geçersiz kılınarak başkalarının hesaba erişmesi engellenir.
 
 #### **Modül B: Araç İlanları ve Yapay Zeka**
 
@@ -31,19 +31,16 @@ Açıklama: Aracın teknik özellikleri (marka, km, boya vb.), konumu ve fotoğr
 2. Fiyat Tahmini Alma (ML)
 API Metodu: POST /cars/predict-price
 Açıklama: Kullanıcının gönderdiği araç özelliklerinin makine öğrenmesi modeline sokularak, tahmini piyasa değerinin hesaplanıp geri döndürülmesini sağlar.
-3. Veri Kazıma (Scraping) Tetikleme
-API Metodu: POST /cars/scrape
-Açıklama: Sahibinden.com gibi kaynaklardan güncel ilan verilerinin çekilip ML modelini beslemek üzere veritabanına kaydedilmesi işlemini başlatır.
-4. İlanları Filtreleme ve Listeleme
+3. İlanları Filtreleme ve Listeleme
 API Metodu: GET /cars
 Açıklama: Sistemdeki araç ilanlarının fiyat, kilometre, marka ve konuma göre filtrelenerek listelenmesini sağlar.
-5. İlan Detayı Görüntüleme
+4. İlan Detayı Görüntüleme
 API Metodu: GET /cars/{carId}
 Açıklama: Seçilen tek bir araca ait tüm resimlerin, donanım detaylarının ve açıklama metinlerinin getirilmesini sağlar.
-6. İlan Güncelleme
+5. İlan Güncelleme
 API Metodu: PUT /cars/{carId}
 Açıklama: İlan sahibinin araç fiyatını veya açıklamasını sonradan düzenlemesini sağlar.
-7. İlan Silme
+6. İlan Silme
 API Metodu: DELETE /cars/{carId}
 Açıklama: Satışı gerçekleşen veya kaldırılmak istenen ilanın sistemden silinmesini sağlar.
 
@@ -73,25 +70,25 @@ Açıklama: Önceden listeye eklenmiş bir aracın sadece o listeden çıkarılm
 API Metodu: DELETE /lists/{listId}
 Açıklama: Kullanıcının oluşturduğu özel bir koleksiyonu kökten silmesini sağlar.
 
-#### **Modül D: Sosyal Etkileşim (Yorum, Beğeni, Paylaşım)**
+#### **Modül D: Etkileşim ve İletişim (Yorum ve Paylaşım)**
 
-*(İlanların dinamikleştiği modül)*
+*(İlanlar üzerindeki kullanıcı değerlendirmelerini ve dışa aktarımı yöneten modül)*
 
 1. Yorum Ekleme
 API Metodu: POST /cars/{carId}/comments
-Açıklama: Kullanıcıların ilan altına soru sormak veya görüş belirtmek için yorum yapmasını sağlar.
-2. İlanı Beğenme (Like)
-API Metodu: POST /cars/{carId}/likes
-Açıklama: Kullanıcıların bir ilana beğeni atmasını sağlayarak ilanın popülerliğini artırır.
-3. Yorumları Listeleme
+Açıklama: Kullanıcıların ilan altına soru sormak veya görüş belirtmek için metin tabanlı yorum yapmasını sağlar.
+2. İlan Yorumlarını Listeleme
 API Metodu: GET /cars/{carId}/comments
 Açıklama: Bir ilana yapılmış olan tüm yorumların tarih sırasına göre listelenmesini sağlar.
-4. Paylaşım Linki Üretme
+3. Paylaşım Linki Üretme
 API Metodu: GET /cars/{carId}/share
-Açıklama: İlanın başka platformlarda (WhatsApp vb.) paylaşılabilmesi için benzersiz ve izlenebilir bir kısa link üretilmesini sağlar.
-5. Yorum Güncelleme
+Açıklama: İlanın başka platformlarda (WhatsApp, Telegram vb.) paylaşılabilmesi için benzersiz ve izlenebilir bir kısa link üretilmesini sağlar.
+4. Yorum Güncelleme
 API Metodu: PUT /comments/{commentId}
-Açıklama: Kullanıcının daha önceden yaptığı bir yorumdaki yazım hatalarını veya içeriği düzenlemesini sağlar.
-6. Yorum Silme
+Açıklama: Kullanıcının daha önceden yaptığı bir yorumdaki yazım hatalarını veya içeriği sonradan düzenlemesini sağlar.
+5. Yorum Silme
 API Metodu: DELETE /comments/{commentId}
-Açıklama: Kullanıcının kendi yorumunu silmesini sağlar.
+Açıklama: Kullanıcının kendi yaptığı bir yorumu sistemden kalıcı olarak silmesini sağlar.
+6. Kullanıcının Kendi Yorumlarını Listeleme *(Tamamlayıcı Gereksinim)*
+API Metodu: GET /users/{userId}/comments
+Açıklama: Bir kullanıcının profil sayfasına girdiğinde, platformdaki farklı ilanlara yaptığı tüm geçmiş yorumları tek bir liste halinde görmesini sağlar.
