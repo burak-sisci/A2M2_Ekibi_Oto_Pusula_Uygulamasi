@@ -31,7 +31,7 @@ Açıklama: Aracın teknik özellikleri (marka, km, boya vb.), konumu ve fotoğr
 2. Fiyat Tahmini Alma (ML)
 API Metodu: POST /cars/predict-price
 Açıklama: Kullanıcının gönderdiği araç özelliklerinin makine öğrenmesi modeline sokularak, tahmini piyasa değerinin hesaplanıp geri döndürülmesini sağlar.
-3. İlanları Filtreleme ve Listeleme
+3. İlanları Filtreleme
 API Metodu: GET /cars
 Açıklama: Sistemdeki araç ilanlarının fiyat, kilometre, marka ve konuma göre filtrelenerek listelenmesini sağlar.
 4. İlan Detayı Görüntüleme
@@ -89,6 +89,6 @@ Açıklama: Kullanıcının daha önceden yaptığı bir yorumdaki yazım hatala
 5. Yorum Silme
 API Metodu: DELETE /comments/{commentId}
 Açıklama: Kullanıcının kendi yaptığı bir yorumu sistemden kalıcı olarak silmesini sağlar.
-6. Kullanıcının Kendi Yorumlarını Listeleme *(Tamamlayıcı Gereksinim)*
+6. Kullanıcının Kendi Yorumlarını Listeleme
 API Metodu: GET /users/{userId}/comments
 Açıklama: Bir kullanıcının profil sayfasına girdiğinde, platformdaki farklı ilanlara yaptığı tüm geçmiş yorumları tek bir liste halinde görmesini sağlar.
