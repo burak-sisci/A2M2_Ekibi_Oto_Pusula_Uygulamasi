@@ -11,9 +11,17 @@ __pycache__/
 venv/
 *.egg-info/
 
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+
 # IDE
 .vscode/
 .idea/
+*.swp
 
 # OS
 .DS_Store
@@ -22,3 +30,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Model dosyaları
+*.pkl
