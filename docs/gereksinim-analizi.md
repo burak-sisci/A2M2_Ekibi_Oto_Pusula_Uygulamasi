@@ -1,3 +1,7 @@
+# Gereksinim Analizi
+
+## Tüm Gereksinimler 
+
 #### **Modül A: Kullanıcı ve Kimlik Yönetimi**
 
 *(Üye olma ve profil süreçlerini yöneten temel modül)*
@@ -92,3 +96,10 @@ Açıklama: Kullanıcının kendi yaptığı bir yorumu sistemden kalıcı olara
 6. Kullanıcının Kendi Yorumlarını Listeleme
 API Metodu: GET /users/{userId}/comments
 Açıklama: Bir kullanıcının profil sayfasına girdiğinde, platformdaki farklı ilanlara yaptığı tüm geçmiş yorumları tek bir liste halinde görmesini sağlar.
+
+## Gereksinim Dağılımları
+
+1. [Burak Şişci'nin Gereksinimleri](docs/ekip/Burak-Sisci/Burak-Sisci-Gereksinimler.md)
+2. [Anıl Elmaz'ın Gereksinimleri](docs/ekip/Anil-Elmaz/Anil-Elmaz-Gereksinimler.md)
+3. [Mehmet Öz'ün Gereksinimleri](docs/ekip/Mehmet-Oz/Mehmet-Oz-Gereksinimler.md)
+4. [Mehmet Uludağ'ın Gereksinimleri](docs/ekip/Mehmet-Uludag/Mehmet-Uludag-Gereksinimler.md)
