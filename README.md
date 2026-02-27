@@ -42,12 +42,12 @@
 
 Projenin teknik detaylarına ve geliştirme süreçlerine aşağıdaki linklerden erişebilirsiniz:
 
-1. [Gereksinim Analizi](docs/Gereksinim-Analizi.md)
-2. [Veritabanı Şeması](docs/Veritabani-Semasi.md)
+1. [Gereksinim Analizi](docs/gereksinim_analizi.md)
+2. [Veritabanı Şeması](docs/veritabani_semasi.md)
 3. [REST API Tasarımı](docs/API-Tasarimi.md)
-4. [REST API)](docs/Rest-API.md)
-5. [Web Front-End](docs/Web-WebFrontEnd.md)
-6. [Mobil Front-End](docs/Mobil-MobilFrontEnd.md)
+4. [REST API](docs/Rest-API.md)
+5. [Web Front-End](docs/WebFrontEnd.md)
+6. [Mobil Front-End](docs/MobilFrontEnd.md)
 7. [Mobil Backend](docs/MobilBackEnd.md)
 8. [Video Sunum](docs/Sunum.md)
 
@@ -65,5 +65,4 @@ Projenin teknik detaylarına ve geliştirme süreçlerine aşağıdaki linklerde
 ### Projeyi Klonlama
 
 ```bash
-git clone [https://github.com/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi.git](https://github.com/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi.git)
-cd OtoPusula
+git clone https://github.com/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi.git
