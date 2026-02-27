@@ -99,7 +99,7 @@ Açıklama: Bir kullanıcının profil sayfasına girdiğinde, platformdaki fark
 
 ## Gereksinim Dağılımları
 
-1. [Burak Şişci'nin Gereksinimleri](ekip/Burak-Sisci/Burak-Sisci-Gereksinimler.md)
-2. [Anıl Elmaz'ın Gereksinimleri](ekip/Anil-Elmaz/Anil-Elmaz-Gereksinimler.md)
-3. [Mehmet Öz'ün Gereksinimleri](ekip/Mehmet-Oz/Mehmet-Oz-Gereksinimler.md)
-4. [Mehmet Uludağ'ın Gereksinimleri](/ekip/Mehmet-Uludag/Mehmet-Uludag-Gereksinimler.md)
+1. [Burak Şişci'nin Gereksinimleri](Burak-Sisci/Burak-Sisci-Gereksinimler.md)
+2. [Anıl Elmaz'ın Gereksinimleri](Anil-Elmaz/Anil-Elmaz-Gereksinimler.md)
+3. [Mehmet Öz'ün Gereksinimleri](Mehmet-Oz/Mehmet-Oz-Gereksinimler.md)
+4. [Mehmet Uludağ'ın Gereksinimleri](Mehmet-Uludag/Mehmet-Uludag-Gereksinimler.md)
