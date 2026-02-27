@@ -42,8 +42,8 @@
 
 Projenin teknik detaylarına ve geliştirme süreçlerine aşağıdaki linklerden erişebilirsiniz:
 
-1. [Gereksinim Analizi](gereksinim_analizi.md)
-2. [Veritabanı Şeması](veritabani_semasi.md)
+1. [Gereksinim Analizi](Gereksinim-Analizi.md)
+2. [Veritabanı Şeması](docs/Veritabani-Semasi.md)
 3. [REST API Tasarımı](API-Tasarimi.md)
 4. [REST API](Rest-API.md)
 5. [Web Front-End](WebFrontEnd.md)
