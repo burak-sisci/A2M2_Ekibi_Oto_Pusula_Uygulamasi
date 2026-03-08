@@ -1,6 +1,6 @@
 # API Tasarımı - OpenAPI Specification Örneği
 
-**OpenAPI Spesifikasyon Dosyası:** [lamine.yaml](API-Tasarimi.yaml)
+**OpenAPI Spesifikasyon Dosyası:** [API-Tasarimi.yaml](API-Tasarimi.yaml)
 
 Bu doküman, OpenAPI Specification (OAS) 3.0 standardına göre hazırlanmış örnek bir API tasarımını içermektedir.
 
