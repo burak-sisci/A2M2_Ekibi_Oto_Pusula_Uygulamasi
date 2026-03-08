@@ -1,0 +1,1802 @@
+openapi: 3.0.3
+info:
+  title: OtoPusula API
+  version: 1.0.0
+  description: >
+    OtoPusula, ikinci el araç piyasasındaki belirsizlikleri ortadan kaldırmak amacıyla geliştirilmiş,
+    yapay zeka destekli bir otomotiv e-ticaret platformunun RESTful API tasarımıdır.
+    Kullanıcı yönetimi, araç ilanları, yapay zeka fiyat tahmini, özel listeler ve
+    sosyal etkileşim (yorum/paylaşım) işlemlerini kapsar. JWT tabanlı kimlik doğrulama ile korunmaktadır.
+  contact:
+    name: A2M2 Ekibi
+    email: burak.sisci@example.com
+
+servers:
+  - url: http://localhost:5001
+    description: Auth Service — Kimlik ve kullanıcı yönetimi
+  - url: http://localhost:5002
+    description: Listing Service — İlanlar, listeler ve yorumlar
+  - url: http://localhost:5000
+    description: AI Service — Yapay zeka fiyat tahmin servisi
+
+tags:
+  - name: Kimlik
+    description: Kayıt, giriş ve çıkış işlemleri (Auth Service — port 5001)
+  - name: Kullanıcılar
+    description: Profil görüntüleme, güncelleme ve hesap silme işlemleri (Auth Service — port 5001)
+  - name: İlanlar
+    description: Araç ilan oluşturma, listeleme, filtreleme, güncelleme ve silme işlemleri (Listing Service — port 5002)
+  - name: YapayZeka
+    description: Makine öğrenmesi tabanlı araç fiyat tahmin servisi (AI Service — port 5000)
+  - name: Listeler
+    description: Kullanıcı koleksiyonları ve favori listesi yönetimi (Listing Service — port 5002)
+  - name: Yorumlar
+    description: İlan yorumları ve sosyal paylaşım işlemleri (Listing Service — port 5002)
+
+security:
+  - BearerAuth: []
+
+paths:
+
+  # ─────────────────────────────────────────────────────
+  # MODÜL A: Kimlik & Kullanıcı Yönetimi
+  # ─────────────────────────────────────────────────────
+
+  /auth/register:
+    post:
+      tags:
+        - Kimlik
+      summary: Üye Ol
+      operationId: registerUser
+      security: []
+      description: >
+        Kullanıcıların sisteme kayıt olmasını sağlar. İsim, email, telefon numarası,
+        cinsiyet (opsiyonel), doğum tarihi (opsiyonel) ve şifre alınarak veritabanında
+        yeni bir kullanıcı oluşturulur.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterInput'
+      responses:
+        "201":
+          description: Kullanıcı başarıyla oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Geçersiz istek verisi (eksik alan veya format hatası)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "409":
+          description: Email veya telefon numarası zaten kayıtlı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Kimlik
+      summary: Kullanıcı Girişi
+      operationId: loginUser
+      security: []
+      description: >
+        Kullanıcının email veya telefon numarası ile şifresini kullanarak sisteme giriş yapmasını sağlar.
+        Başarılı girişte JWT erişim token'ı (yetki belgesi) döndürür.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginInput'
+      responses:
+        "200":
+          description: Giriş başarılı, token döndürüldü
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        "400":
+          description: Geçersiz istek verisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Email/telefon veya şifre hatalı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      tags:
+        - Kimlik
+      summary: Kullanıcı Çıkışı
+      operationId: logoutUser
+      description: >
+        Sisteme giriş yapmış olan kullanıcının oturumunu güvenli bir şekilde sonlandırır.
+        Kullanıcının cihazındaki aktif erişim token'ı geçersiz kılınarak başkalarının
+        hesaba erişmesi engellenir.
+      responses:
+        "200":
+          description: Çıkış başarıyla gerçekleştirildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Oturum başarıyla sonlandırıldı"
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: Kullanıcının benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64a1b2c3d4e5f6789abc1234"
+
+    get:
+      tags:
+        - Kullanıcılar
+      summary: Profil Görüntüleme
+      operationId: getUser
+      description: Kullanıcının profil bilgilerini (ad, email, katılım tarihi vb.) getirir.
+      responses:
+        "200":
+          description: Profil başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Kullanıcı bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Kullanıcılar
+      summary: Profil Güncelleme
+      operationId: updateUser
+      description: >
+        Kullanıcının şifre, telefon veya isim gibi kişisel bilgilerini değiştirir.
+        Sadece kendi profilini güncelleyebilir.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateInput'
+      responses:
+        "200":
+          description: Profil başarıyla güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Geçersiz istek verisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu kullanıcının profilini güncelleme yetkiniz yok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Kullanıcı bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Kullanıcılar
+      summary: Hesap Silme
+      operationId: deleteUser
+      description: >
+        Kullanıcının kendi isteğiyle hesabını ve sistemdeki tüm kişisel verilerini
+        kalıcı olarak siler.
+      responses:
+        "204":
+          description: Hesap başarıyla silindi
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu hesabı silme yetkiniz yok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Kullanıcı bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userId}/lists:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: Kullanıcının benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64a1b2c3d4e5f6789abc1234"
+
+    get:
+      tags:
+        - Kullanıcılar
+      summary: Kullanıcının Listelerini Görüntüleme
+      operationId: getUserLists
+      description: Kullanıcının sahip olduğu tüm listelerin ve içlerindeki araç sayılarının getirilmesini sağlar.
+      responses:
+        "200":
+          description: Listeler başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/List'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Kullanıcı bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userId}/comments:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: Kullanıcının benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64a1b2c3d4e5f6789abc1234"
+
+    get:
+      tags:
+        - Kullanıcılar
+      summary: Kullanıcının Kendi Yorumlarını Listeleme
+      operationId: getUserComments
+      description: >
+        Bir kullanıcının platformdaki farklı ilanlara yaptığı tüm geçmiş yorumları
+        tek bir liste halinde gösterir.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Sayfa numarası (varsayılan 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          description: Sayfa başına sonuç sayısı (varsayılan 10, maksimum 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          example: 10
+      responses:
+        "200":
+          description: Yorumlar başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Kullanıcı bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─────────────────────────────────────────────────────
+  # MODÜL B: Araç İlanları & Yapay Zeka
+  # ─────────────────────────────────────────────────────
+
+  /cars:
+    post:
+      tags:
+        - İlanlar
+      summary: Yeni İlan Ekleme
+      operationId: createCar
+      description: >
+        Aracın teknik özellikleri (marka, km, boya vb.), konumu ve fotoğraflarıyla
+        birlikte sisteme yeni bir ilan olarak eklenmesini sağlar.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CarInput'
+      responses:
+        "201":
+          description: İlan başarıyla oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        "400":
+          description: Geçersiz istek verisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags:
+        - İlanlar
+      summary: İlanları Filtreleyerek Listeleme
+      operationId: listCars
+      description: >
+        Sistemdeki araç ilanlarının fiyat, kilometre, marka ve konuma göre
+        filtrelenerek listelenmesini sağlar.
+      parameters:
+        - name: brand
+          in: query
+          required: false
+          description: Araç markası
+          schema:
+            type: string
+          example: "Toyota"
+        - name: model
+          in: query
+          required: false
+          description: Araç modeli
+          schema:
+            type: string
+          example: "Corolla"
+        - name: minPrice
+          in: query
+          required: false
+          description: Minimum fiyat (TL)
+          schema:
+            type: number
+            minimum: 0
+          example: 500000
+        - name: maxPrice
+          in: query
+          required: false
+          description: Maksimum fiyat (TL)
+          schema:
+            type: number
+            minimum: 0
+          example: 1500000
+        - name: minKm
+          in: query
+          required: false
+          description: Minimum kilometre
+          schema:
+            type: integer
+            minimum: 0
+          example: 0
+        - name: maxKm
+          in: query
+          required: false
+          description: Maksimum kilometre
+          schema:
+            type: integer
+            minimum: 0
+          example: 100000
+        - name: fuelType
+          in: query
+          required: false
+          description: Yakıt türü
+          schema:
+            type: string
+            enum: [Benzin, Dizel, LPG, Elektrik, Hibrit]
+          example: "Benzin"
+        - name: gearType
+          in: query
+          required: false
+          description: Vites türü
+          schema:
+            type: string
+            enum: [Manuel, Otomatik, "Yarı Otomatik"]
+          example: "Otomatik"
+        - name: year
+          in: query
+          required: false
+          description: Model yılı
+          schema:
+            type: integer
+            minimum: 1990
+            maximum: 2025
+          example: 2020
+        - name: city
+          in: query
+          required: false
+          description: Şehir
+          schema:
+            type: string
+          example: "İstanbul"
+        - name: page
+          in: query
+          required: false
+          description: Sayfa numarası (varsayılan 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          description: Sayfa başına sonuç sayısı (varsayılan 10, maksimum 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          example: 10
+      responses:
+        "200":
+          description: İlanlar başarıyla listelendi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+        "400":
+          description: Geçersiz filtre parametreleri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cars/predict-price:
+    post:
+      tags:
+        - YapayZeka
+      summary: Fiyat Tahmini Alma (ML)
+      operationId: predictCarPrice
+      description: >
+        Kullanıcının gönderdiği araç özelliklerinin makine öğrenmesi modeline sokularak,
+        tahmini piyasa değerinin hesaplanıp geri döndürülmesini sağlar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricePredictInput'
+      responses:
+        "200":
+          description: Fiyat tahmini başarıyla hesaplandı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricePredictResponse'
+        "400":
+          description: Geçersiz araç özellikleri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Yapay zeka servisi geçici olarak kullanılamıyor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cars/{carId}:
+    parameters:
+      - name: carId
+        in: path
+        required: true
+        description: Araç ilanının benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64b2c3d4e5f6789abc56789"
+
+    get:
+      tags:
+        - İlanlar
+      summary: İlan Detayı Görüntüleme
+      operationId: getCar
+      description: >
+        Seçilen tek bir araca ait tüm resimlerin, donanım detaylarının ve
+        açıklama metinlerinin getirilmesini sağlar.
+      responses:
+        "200":
+          description: İlan detayı başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: İlan bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - İlanlar
+      summary: İlan Güncelleme
+      operationId: updateCar
+      description: İlan sahibinin araç fiyatını veya açıklamasını sonradan düzenlemesini sağlar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarUpdateInput'
+      responses:
+        "200":
+          description: İlan başarıyla güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        "400":
+          description: Geçersiz istek verisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu ilanı güncelleme yetkiniz yok (sadece ilan sahibi güncelleyebilir)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: İlan bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - İlanlar
+      summary: İlan Silme
+      operationId: deleteCar
+      description: Satışı gerçekleşen veya kaldırılmak istenen ilanın sistemden silinmesini sağlar.
+      responses:
+        "204":
+          description: İlan başarıyla silindi
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu ilanı silme yetkiniz yok (sadece ilan sahibi silebilir)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: İlan bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─────────────────────────────────────────────────────
+  # MODÜL C: Özel Listeler & Favoriler
+  # ─────────────────────────────────────────────────────
+
+  /lists:
+    post:
+      tags:
+        - Listeler
+      summary: Yeni Liste Oluşturma
+      operationId: createList
+      description: >
+        Kullanıcıların "Alınacaklar", "Kıyaslanacaklar" gibi isimlerle yeni koleksiyonlar
+        oluşturmasını sağlar. Favoriler listesi kayıt anında otomatik açılır.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListInput'
+      responses:
+        "201":
+          description: Liste başarıyla oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        "400":
+          description: Geçersiz istek verisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /lists/{listId}:
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        description: Listenin benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64c3d4e5f6789abcdef1234"
+
+    get:
+      tags:
+        - Listeler
+      summary: Liste İçeriğini Görüntüleme
+      operationId: getList
+      description: >
+        Spesifik bir listenin içine girildiğinde, o listedeki tüm araç ilanlarının
+        detaylarıyla birlikte ekrana getirilmesini sağlar.
+      responses:
+        "200":
+          description: Liste içeriği başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDetail'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Liste bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Listeler
+      summary: Liste İsmini Güncelleme
+      operationId: updateList
+      description: >
+        Kullanıcının daha önce oluşturduğu bir listenin adını değiştirir.
+        Varsayılan Favoriler listesinin adı değiştirilemez.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListUpdateInput'
+      responses:
+        "200":
+          description: Liste adı başarıyla güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        "400":
+          description: Geçersiz istek verisi veya Favoriler listesi adı değiştirilemez
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu listeyi güncelleme yetkiniz yok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Liste bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Listeler
+      summary: Listeyi Tamamen Silme
+      operationId: deleteList
+      description: >
+        Kullanıcının oluşturduğu özel bir koleksiyonu kökten siler.
+        Varsayılan Favoriler listesi silinemez.
+      responses:
+        "204":
+          description: Liste başarıyla silindi
+        "400":
+          description: Varsayılan Favoriler listesi silinemez
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu listeyi silme yetkiniz yok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Liste bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /lists/{listId}/cars:
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        description: Listenin benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64c3d4e5f6789abcdef1234"
+
+    post:
+      tags:
+        - Listeler
+      summary: Listeye İlan Ekleme
+      operationId: addCarToList
+      description: >
+        Beğenilen bir araç ilanının, kullanıcının seçtiği spesifik bir listeye
+        (veya varsayılan Favoriler listesine) eklenmesini sağlar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListCarInput'
+      responses:
+        "200":
+          description: İlan listeye başarıyla eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        "400":
+          description: İlan zaten listede mevcut
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu listeye ekleme yetkiniz yok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Liste veya ilan bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /lists/{listId}/cars/{carId}:
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        description: Listenin benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64c3d4e5f6789abcdef1234"
+      - name: carId
+        in: path
+        required: true
+        description: Araç ilanının benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64b2c3d4e5f6789abc56789"
+
+    delete:
+      tags:
+        - Listeler
+      summary: Listeden İlan Çıkarma
+      operationId: removeCarFromList
+      description: >
+        Önceden listeye eklenmiş bir aracın sadece o listeden çıkarılmasını sağlar.
+        İlanın kendisi silinmez.
+      responses:
+        "200":
+          description: İlan listeden başarıyla çıkarıldı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu listeden çıkarma yetkiniz yok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Liste veya ilan bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─────────────────────────────────────────────────────
+  # MODÜL D: Etkileşim & İletişim (Yorum & Paylaşım)
+  # ─────────────────────────────────────────────────────
+
+  /cars/{carId}/comments:
+    parameters:
+      - name: carId
+        in: path
+        required: true
+        description: Araç ilanının benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64b2c3d4e5f6789abc56789"
+
+    get:
+      tags:
+        - Yorumlar
+      summary: İlan Yorumlarını Listeleme
+      operationId: listCarComments
+      description: Bir ilana yapılmış olan tüm yorumların tarih sırasına göre listelenmesini sağlar.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Sayfa numarası (varsayılan 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          description: Sayfa başına sonuç sayısı (varsayılan 10, maksimum 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          example: 10
+      responses:
+        "200":
+          description: Yorumlar başarıyla listelendi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: İlan bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Yorumlar
+      summary: Yorum Ekleme
+      operationId: addComment
+      description: >
+        Kullanıcıların ilan altına soru sormak veya görüş belirtmek için
+        metin tabanlı yorum yapmasını sağlar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        "201":
+          description: Yorum başarıyla oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        "400":
+          description: Geçersiz istek verisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: İlan bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cars/{carId}/share:
+    parameters:
+      - name: carId
+        in: path
+        required: true
+        description: Araç ilanının benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64b2c3d4e5f6789abc56789"
+
+    get:
+      tags:
+        - Yorumlar
+      summary: Paylaşım Linki Üretme
+      operationId: getShareLink
+      description: >
+        İlanın başka platformlarda (WhatsApp, Telegram vb.) paylaşılabilmesi için
+        benzersiz ve izlenebilir bir kısa link üretilmesini sağlar.
+      responses:
+        "200":
+          description: Paylaşım linki başarıyla oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareLinkResponse'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: İlan bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /comments/{commentId}:
+    parameters:
+      - name: commentId
+        in: path
+        required: true
+        description: Yorumun benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64d4e5f6789abcdef234567"
+
+    put:
+      tags:
+        - Yorumlar
+      summary: Yorum Güncelleme
+      operationId: updateComment
+      description: >
+        Kullanıcının daha önceden yaptığı bir yorumdaki yazım hatalarını veya
+        içeriği sonradan düzenlemesini sağlar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        "200":
+          description: Yorum başarıyla güncellendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        "400":
+          description: Geçersiz istek verisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu yorumu güncelleme yetkiniz yok (sadece yorum sahibi güncelleyebilir)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Yorum bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Yorumlar
+      summary: Yorum Silme
+      operationId: deleteComment
+      description: Kullanıcının kendi yaptığı bir yorumu sistemden kalıcı olarak siler.
+      responses:
+        "204":
+          description: Yorum başarıyla silindi
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Bu yorumu silme yetkiniz yok (sadece yorum sahibi silebilir)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Yorum bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ─────────────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────────────
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 'JWT tabanlı kimlik doğrulama. İstek başlığına "Authorization: Bearer <token>" eklenmeli.'
+
+  schemas:
+
+    # ── MODÜL A: Kullanıcı Şemaları ──────────────────
+
+    UserRegisterInput:
+      type: object
+      description: Yeni kullanıcı kaydı için gönderilecek veri
+      properties:
+        name:
+          type: string
+          description: Kullanıcının tam adı
+          minLength: 2
+          maxLength: 100
+          example: "Burak Şişci"
+        email:
+          type: string
+          format: email
+          description: Kullanıcının e-posta adresi (benzersiz olmalı)
+          example: "burak@example.com"
+        phone:
+          type: string
+          description: Kullanıcının telefon numarası (benzersiz olmalı, ülke kodu dahil)
+          example: "+905551234567"
+        password:
+          type: string
+          format: password
+          description: Kullanıcının şifresi (min. 8 karakter)
+          minLength: 8
+          example: "Gizli1234!"
+        gender:
+          type: string
+          description: Cinsiyet (opsiyonel)
+          enum: ["Erkek", "Kadın", "Belirtmek İstemiyorum"]
+          example: "Erkek"
+        birthDate:
+          type: string
+          format: date
+          description: Doğum tarihi (opsiyonel, ISO 8601 formatında)
+          example: "1998-05-15"
+      required:
+        - name
+        - email
+        - phone
+        - password
+
+    UserLoginInput:
+      type: object
+      description: Kullanıcı girişi için gönderilecek veri
+      properties:
+        identifier:
+          type: string
+          description: E-posta adresi veya telefon numarası
+          example: "burak@example.com"
+        password:
+          type: string
+          format: password
+          description: Kullanıcının şifresi
+          example: "Gizli1234!"
+      required:
+        - identifier
+        - password
+
+    TokenResponse:
+      type: object
+      description: Başarılı giriş sonrası döndürülen token bilgisi
+      properties:
+        token:
+          type: string
+          description: JWT erişim token'ı
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        expiresIn:
+          type: integer
+          description: Token geçerlilik süresi (saniye cinsinden)
+          example: 86400
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - token
+        - expiresIn
+        - user
+
+    User:
+      type: object
+      description: Kullanıcı profil bilgilerini temsil eden model
+      properties:
+        _id:
+          type: string
+          description: Kullanıcının benzersiz kimlik numarası (otomatik atanır)
+          example: "64a1b2c3d4e5f6789abc1234"
+        name:
+          type: string
+          description: Kullanıcının tam adı
+          example: "Burak Şişci"
+        email:
+          type: string
+          format: email
+          description: Kullanıcının e-posta adresi
+          example: "burak@example.com"
+        phone:
+          type: string
+          description: Kullanıcının telefon numarası
+          example: "+905551234567"
+        gender:
+          type: string
+          description: Cinsiyet
+          enum: ["Erkek", "Kadın", "Belirtmek İstemiyorum"]
+          example: "Erkek"
+        birthDate:
+          type: string
+          format: date
+          description: Doğum tarihi
+          example: "1998-05-15"
+        createdAt:
+          type: string
+          format: date-time
+          description: Hesabın oluşturulma tarihi
+          example: "2025-01-10T09:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Profilin son güncellenme tarihi
+          example: "2026-03-07T14:30:00Z"
+      required:
+        - _id
+        - name
+        - email
+        - phone
+        - createdAt
+
+    UserUpdateInput:
+      type: object
+      description: Profil güncelleme isteği için gönderilecek veri (tüm alanlar opsiyonel)
+      properties:
+        name:
+          type: string
+          description: Yeni tam ad
+          minLength: 2
+          maxLength: 100
+          example: "Burak S."
+        phone:
+          type: string
+          description: Yeni telefon numarası
+          example: "+905559876543"
+        password:
+          type: string
+          format: password
+          description: Yeni şifre (min. 8 karakter)
+          minLength: 8
+          example: "YeniSifre5678!"
+
+    # ── MODÜL B: Araç & Yapay Zeka Şemaları ──────────
+
+    CarInput:
+      type: object
+      description: Yeni ilan oluşturma isteği için gönderilecek veri
+      properties:
+        brand:
+          type: string
+          description: Araç markası
+          example: "Toyota"
+        model:
+          type: string
+          description: Araç modeli
+          example: "Corolla"
+        year:
+          type: integer
+          description: Model yılı
+          minimum: 1990
+          maximum: 2025
+          example: 2020
+        km:
+          type: integer
+          description: Araç kilometresi
+          minimum: 0
+          example: 45000
+        fuelType:
+          type: string
+          description: Yakıt türü
+          enum: [Benzin, Dizel, LPG, Elektrik, Hibrit]
+          example: "Benzin"
+        gearType:
+          type: string
+          description: Vites türü
+          enum: [Manuel, Otomatik, "Yarı Otomatik"]
+          example: "Otomatik"
+        price:
+          type: number
+          description: Satış fiyatı (TL)
+          minimum: 0
+          example: 850000
+        description:
+          type: string
+          description: İlan açıklama metni
+          maxLength: 2000
+          example: "Kazasız, hasarsız, galeriden alınma araç. Tüm bakımları yaptırılmıştır."
+        location:
+          type: object
+          description: Aracın bulunduğu konum
+          properties:
+            city:
+              type: string
+              description: Şehir
+              example: "İstanbul"
+            district:
+              type: string
+              description: İlçe
+              example: "Kadıköy"
+          required:
+            - city
+        damageInfo:
+          type: array
+          description: Hasar bilgileri (boya, değişen parçalar vb.)
+          items:
+            type: string
+          example: ["Kaput Değişen", "Sağ Çamurluk Boyalı"]
+        images:
+          type: array
+          description: Araç fotoğrafları (dosya yükleme — multipart/form-data)
+          items:
+            type: string
+            format: binary
+      required:
+        - brand
+        - model
+        - year
+        - km
+        - fuelType
+        - gearType
+        - price
+        - location
+
+    Car:
+      type: object
+      description: Araç ilanını temsil eden model
+      properties:
+        _id:
+          type: string
+          description: İlanın benzersiz kimlik numarası (otomatik atanır)
+          example: "64b2c3d4e5f6789abc56789"
+        userId:
+          type: string
+          description: İlanı veren kullanıcının kimliği
+          example: "64a1b2c3d4e5f6789abc1234"
+        brand:
+          type: string
+          description: Araç markası
+          example: "Toyota"
+        model:
+          type: string
+          description: Araç modeli
+          example: "Corolla"
+        year:
+          type: integer
+          description: Model yılı
+          example: 2020
+        km:
+          type: integer
+          description: Kilometre
+          example: 45000
+        fuelType:
+          type: string
+          description: Yakıt türü
+          enum: [Benzin, Dizel, LPG, Elektrik, Hibrit]
+          example: "Benzin"
+        gearType:
+          type: string
+          description: Vites türü
+          enum: [Manuel, Otomatik, "Yarı Otomatik"]
+          example: "Otomatik"
+        price:
+          type: number
+          description: Satış fiyatı (TL)
+          example: 850000
+        description:
+          type: string
+          description: İlan açıklaması
+          example: "Kazasız, hasarsız, galeriden alınma araç."
+        images:
+          type: array
+          description: Fotoğraf URL'lerini tutan liste
+          items:
+            type: string
+          example: ["https://storage.example.com/cars/img1.jpg", "https://storage.example.com/cars/img2.jpg"]
+        location:
+          type: object
+          description: Aracın konumu
+          properties:
+            city:
+              type: string
+              example: "İstanbul"
+            district:
+              type: string
+              example: "Kadıköy"
+        damageInfo:
+          type: array
+          description: Hasar ve boya bilgileri
+          items:
+            type: string
+          example: ["Kaput Değişen", "Sağ Çamurluk Boyalı"]
+        createdAt:
+          type: string
+          format: date-time
+          description: İlanın oluşturulma tarihi
+          example: "2026-02-15T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: İlanın son güncellenme tarihi
+          example: "2026-03-01T16:45:00Z"
+      required:
+        - _id
+        - userId
+        - brand
+        - model
+        - year
+        - km
+        - fuelType
+        - gearType
+        - price
+        - location
+        - createdAt
+
+    CarUpdateInput:
+      type: object
+      description: İlan güncelleme isteği için gönderilecek veri (tüm alanlar opsiyonel)
+      properties:
+        price:
+          type: number
+          description: Güncel satış fiyatı (TL)
+          minimum: 0
+          example: 800000
+        description:
+          type: string
+          description: Güncel açıklama metni
+          maxLength: 2000
+          example: "Fiyat düşürüldü. Takas görüşülür."
+
+    PricePredictInput:
+      type: object
+      description: Makine öğrenmesi fiyat tahmini için gönderilecek araç özellikleri
+      properties:
+        brand:
+          type: string
+          description: Araç markası
+          example: "Toyota"
+        model:
+          type: string
+          description: Araç modeli
+          example: "Corolla"
+        year:
+          type: integer
+          description: Model yılı
+          minimum: 1990
+          maximum: 2025
+          example: 2020
+        km:
+          type: integer
+          description: Kilometre
+          minimum: 0
+          example: 45000
+        fuelType:
+          type: string
+          description: Yakıt türü
+          enum: [Benzin, Dizel, LPG, Elektrik, Hibrit]
+          example: "Benzin"
+        gearType:
+          type: string
+          description: Vites türü
+          enum: [Manuel, Otomatik, "Yarı Otomatik"]
+          example: "Otomatik"
+        damageInfo:
+          type: array
+          description: Hasar bilgileri (varsa)
+          items:
+            type: string
+          example: []
+      required:
+        - brand
+        - model
+        - year
+        - km
+        - fuelType
+        - gearType
+
+    PricePredictResponse:
+      type: object
+      description: Yapay zeka fiyat tahmin sonucu
+      properties:
+        estimatedPrice:
+          type: number
+          description: Tahmini piyasa değeri (TL)
+          example: 875000
+        priceRange:
+          type: object
+          description: Güven aralığı (minimum-maksimum)
+          properties:
+            min:
+              type: number
+              description: Minimum tahmini fiyat (TL)
+              example: 820000
+            max:
+              type: number
+              description: Maksimum tahmini fiyat (TL)
+              example: 930000
+        confidence:
+          type: number
+          description: Modelin güven skoru (0-1 arası)
+          minimum: 0
+          maximum: 1
+          example: 0.87
+        generatedAt:
+          type: string
+          format: date-time
+          description: Tahmin üretilme tarihi
+          example: "2026-03-07T14:00:00Z"
+      required:
+        - estimatedPrice
+        - priceRange
+        - confidence
+        - generatedAt
+
+    # ── MODÜL C: Liste Şemaları ───────────────────────
+
+    ListInput:
+      type: object
+      description: Yeni liste oluşturma isteği için gönderilecek veri
+      properties:
+        name:
+          type: string
+          description: Liste adı
+          minLength: 1
+          maxLength: 100
+          example: "Alınacaklar"
+      required:
+        - name
+
+    List:
+      type: object
+      description: Kullanıcı listesini temsil eden model (araç sayısıyla birlikte)
+      properties:
+        _id:
+          type: string
+          description: Listenin benzersiz kimlik numarası
+          example: "64c3d4e5f6789abcdef1234"
+        userId:
+          type: string
+          description: Listenin sahibi
+          example: "64a1b2c3d4e5f6789abc1234"
+        name:
+          type: string
+          description: Liste adı
+          example: "Alınacaklar"
+        isDefault:
+          type: boolean
+          description: Varsayılan Favoriler listesi mi?
+          example: false
+        carCount:
+          type: integer
+          description: Listedeki araç sayısı
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          description: Listenin oluşturulma tarihi
+          example: "2026-01-20T08:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Listenin son güncellenme tarihi
+          example: "2026-03-05T11:00:00Z"
+      required:
+        - _id
+        - userId
+        - name
+        - isDefault
+        - carCount
+        - createdAt
+
+    ListDetail:
+      type: object
+      description: Liste içeriğini araç detaylarıyla birlikte temsil eden model
+      properties:
+        _id:
+          type: string
+          description: Listenin benzersiz kimlik numarası
+          example: "64c3d4e5f6789abcdef1234"
+        userId:
+          type: string
+          description: Listenin sahibi
+          example: "64a1b2c3d4e5f6789abc1234"
+        name:
+          type: string
+          description: Liste adı
+          example: "Alınacaklar"
+        isDefault:
+          type: boolean
+          description: Varsayılan Favoriler listesi mi?
+          example: false
+        cars:
+          type: array
+          description: Listedeki araç ilanları (detaylarıyla birlikte)
+          items:
+            $ref: '#/components/schemas/Car'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-01-20T08:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-03-05T11:00:00Z"
+      required:
+        - _id
+        - userId
+        - name
+        - isDefault
+        - cars
+        - createdAt
+
+    ListUpdateInput:
+      type: object
+      description: Liste adı güncelleme isteği için gönderilecek veri
+      properties:
+        name:
+          type: string
+          description: Yeni liste adı
+          minLength: 1
+          maxLength: 100
+          example: "Kıyaslanacaklar"
+      required:
+        - name
+
+    ListCarInput:
+      type: object
+      description: Listeye ilan ekleme isteği için gönderilecek veri
+      properties:
+        carId:
+          type: string
+          description: Listeye eklenecek araç ilanının kimliği
+          example: "64b2c3d4e5f6789abc56789"
+      required:
+        - carId
+
+    # ── MODÜL D: Yorum & Paylaşım Şemaları ───────────
+
+    CommentInput:
+      type: object
+      description: Yorum oluşturma veya güncelleme isteği için gönderilecek veri
+      properties:
+        content:
+          type: string
+          description: Yorum metni
+          minLength: 1
+          maxLength: 1000
+          example: "Bu araç hâlâ satılık mı? Kaç yıldır kullanıyorsunuz?"
+      required:
+        - content
+
+    Comment:
+      type: object
+      description: Yorum bilgilerini temsil eden model
+      properties:
+        _id:
+          type: string
+          description: Yorumun benzersiz kimlik numarası (otomatik atanır)
+          example: "64d4e5f6789abcdef234567"
+        userId:
+          type: string
+          description: Yorumu yapan kullanıcının kimliği
+          example: "64a1b2c3d4e5f6789abc1234"
+        carId:
+          type: string
+          description: Yorumun yapıldığı ilanın kimliği
+          example: "64b2c3d4e5f6789abc56789"
+        text:
+          type: string
+          description: Yorum metni
+          example: "Bu araç hâlâ satılık mı? Kaç yıldır kullanıyorsunuz?"
+        createdAt:
+          type: string
+          format: date-time
+          description: Yorumun oluşturulma tarihi
+          example: "2026-03-06T12:30:00Z"
+      required:
+        - _id
+        - userId
+        - carId
+        - content
+        - createdAt
+
+    ShareLinkResponse:
+      type: object
+      description: Paylaşım linki bilgilerini temsil eden model
+      properties:
+        shortUrl:
+          type: string
+          description: Kısa ve izlenebilir paylaşım linki
+          example: "https://otopusula.app/s/aBc123"
+        originalUrl:
+          type: string
+          description: Orijinal ilan URL'i
+          example: "https://otopusula.app/cars/64b2c3d4e5f6789abc56789"
+        expiresAt:
+          type: string
+          format: date-time
+          description: Linkin geçerlilik bitiş tarihi
+          example: "2026-06-07T14:00:00Z"
+      required:
+        - shortUrl
+        - originalUrl
+
+    # ── Standart Hata Şeması ──────────────────────────
+
+    Error:
+      type: object
+      description: Hata durumlarında döndürülen standart hata yanıtı
+      properties:
+        message:
+          type: string
+          description: Hatayı açıklayan mesaj
+          example: "İlan bulunamadı"
+        code:
+          type: string
+          description: Uygulamaya özgü hata kodu (opsiyonel)
+          example: "CAR_NOT_FOUND"
+      required:
+        - message
