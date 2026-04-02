@@ -33,3 +33,49 @@ npm-debug.log*
 
 # Model dosyaları
 *.pkl
+
+# Dependencies
+frontend/node_modules/
+frontend/build/
+
+# Python
+ML_Model_V4/venv/
+ML_Model_V4/model_venv/
+ML_Model_V4/__pycache__/
+*.pyc
+
+# .NET
+backend/backend.API/bin/
+backend/backend.API/obj/
+backend/.vs/
+
+# Environment files (secrets)
+backend/backend.API/.env
+frontend/.env.local
+frontend/.env.production.local
+
+# ML Model - Git LFS ile takip ediliyor (.gitattributes)
+# ML_Model_V4/araba_modeli.pkl
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dataset (large files)
+dataset/
+
+# Reference sites (not part of the project)
+frontend-v2/
+frontend-v3/
+
+# Claude Code
+.claude/
+
+# DEPLOYMENT
+.DEPLOY.md
