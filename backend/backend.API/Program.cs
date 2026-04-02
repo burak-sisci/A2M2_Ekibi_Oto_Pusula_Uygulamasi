@@ -24,3 +24,7 @@ using backend.API.Modules.Prediction.Infrastructure;
 builder.Services.AddScoped<ICarRepository, MongoCarRepository>();
 builder.Services.AddScoped<GetCarsQuery>();
 builder.Services.AddScoped<AddCarCommand>();
+// ── Lists Module ──────────────────────────────────────────────
+builder.Services.AddScoped<IListRepository, MongoListRepository>();
+builder.Services.AddScoped<CreateDefaultListCommand>();
+builder.Services.AddScoped<AddItemToListCommand>();
