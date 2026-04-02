@@ -20,7 +20,7 @@ using StackExchange.Redis;
 using backend.API.Modules.Prediction.Application;
 using backend.API.Modules.Prediction.Infrastructure;
 
-// ── Lists Module ──────────────────────────────────────────────
-builder.Services.AddScoped<IListRepository, MongoListRepository>();
-builder.Services.AddScoped<CreateDefaultListCommand>();
-builder.Services.AddScoped<AddItemToListCommand>();
+// ── Cars Module ───────────────────────────────────────────────
+builder.Services.AddScoped<ICarRepository, MongoCarRepository>();
+builder.Services.AddScoped<GetCarsQuery>();
+builder.Services.AddScoped<AddCarCommand>();
