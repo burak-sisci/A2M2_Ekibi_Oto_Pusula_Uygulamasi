@@ -20,9 +20,12 @@ using StackExchange.Redis;
 using backend.API.Modules.Prediction.Application;
 using backend.API.Modules.Prediction.Infrastructure;
 
+
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
+var mongoConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionString));
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -34,11 +37,13 @@ builder.Services.AddControllers()
     });
 builder.Services.AddHttpClient();
 
+
 // ── Swagger / OpenAPI ─────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Car Market API", Version = "v1" });
+
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -65,12 +70,16 @@ builder.Services.AddSwaggerGen(c =>
      }
  });
 
+
 });
+
 
 // JWT Authentication
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? builder.Configuration["JWT_SECRET"]!;
 var jwtIssuer = Environment.GetEnvironmentVariable("ISSUER") ?? builder.Configuration["ISSUER"]!;
 var jwtAudience = Environment.GetEnvironmentVariable("AUDIENCE") ?? builder.Configuration["AUDIENCE"]!;
+
+
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -89,11 +98,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
 builder.Services.AddAuthorization();
+
+
 
 
 // ── Redis Yapılandırması ─────────────────────────────────────────────────────
 var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
+
 
 if (!string.IsNullOrEmpty(redisConnectionString))
 {
@@ -107,25 +120,22 @@ if (!string.IsNullOrEmpty(redisConnectionString))
     options.ConnectTimeout = 10000; // 10 saniye
     options.SyncTimeout = 10000;
 
+
     builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
     {
         return ConnectionMultiplexer.Connect(options);
     });
 }
 
+// ── Exception Handler ─────────────────────────────────────────
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 
 // Shared configiruration
+builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddSingleton<MongoTransactionManager>();
 builder.Services.AddSingleton<JwtTokenGenerator>();
-
-
-// ── Cars Module ───────────────────────────────────────────────
-builder.Services.AddScoped<ICarRepository, MongoCarRepository>();
-builder.Services.AddScoped<GetCarsQuery>();
-builder.Services.AddScoped<AddCarCommand>();
-// ── Lists Module ──────────────────────────────────────────────
-builder.Services.AddScoped<IListRepository, MongoListRepository>();
-builder.Services.AddScoped<CreateDefaultListCommand>();
-builder.Services.AddScoped<AddItemToListCommand>();
 
 // ── Auth Module ───────────────────────────────────────────────
 builder.Services.AddScoped<IUserRepository, MongoUserRepository>();
@@ -135,6 +145,35 @@ builder.Services.AddScoped<RegisterUserCommand>();
 builder.Services.AddScoped<LoginUserCommand>();
 builder.Services.AddScoped<LogoutUserCommand>();
 
+// ── Comments Module ───────────────────────────────────────────
+builder.Services.AddScoped<ICommentRepository, MongoCommentRepository>();
+builder.Services.AddScoped<GetCarCommentsQuery>();
+builder.Services.AddScoped<AddCommentCommand>();
+
+builder.Services.AddScoped<GetCommentQuery>();
+builder.Services.AddScoped<UpdateCommentCommand>();
+builder.Services.AddScoped<DeleteCommentCommand>();
+
+// ── Cars Module ───────────────────────────────────────────────
+builder.Services.AddScoped<ICarRepository, MongoCarRepository>();
+builder.Services.AddScoped<GetCarsQuery>();
+builder.Services.AddScoped<AddCarCommand>();
+
+// ── Lists Module ──────────────────────────────────────────────
+builder.Services.AddScoped<IListRepository, MongoListRepository>();
+builder.Services.AddScoped<CreateDefaultListCommand>();
+builder.Services.AddScoped<AddItemToListCommand>();
+
+
+// -- Prediction Module (ML modeli için)-------------------------
+builder.Services.AddHttpClient<IPredictionService, PredictionService>(client =>
+{
+    var fastApiUrl = Environment.GetEnvironmentVariable("FASTAPI_BASE_URL")
+        ?? builder.Configuration["FastApi:BaseUrl"]
+        ?? "http://127.0.0.1:8000";
+    client.BaseAddress = new Uri(fastApiUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // ── CORS ──────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
@@ -143,9 +182,9 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
+
 // MediatR Entegrasyonu 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-
 
 var app = builder.Build();
 
@@ -158,6 +197,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
+
 
 app.UseCors();
 

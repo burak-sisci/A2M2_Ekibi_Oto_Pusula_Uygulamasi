@@ -29,4 +29,5 @@ fi\n\
 nginx -g "daemon off;"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 EXPOSE 80
+
 CMD ["bash", "/entrypoint.sh"]
