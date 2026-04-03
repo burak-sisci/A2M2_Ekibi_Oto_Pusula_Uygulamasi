@@ -19,15 +19,13 @@ using MongoDB.Driver;
 using StackExchange.Redis;
 using backend.API.Modules.Prediction.Application;
 using backend.API.Modules.Prediction.Infrastructure;
+
+
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
-
 var mongoConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionString));
-
-
-
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -55,8 +53,6 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-
-
 
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -131,32 +127,15 @@ if (!string.IsNullOrEmpty(redisConnectionString))
     });
 }
 
-
-
-
 // ── Exception Handler ─────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
-
-
 
 
 // Shared configiruration
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddSingleton<MongoTransactionManager>();
 builder.Services.AddSingleton<JwtTokenGenerator>();
-
-
-// ── Comments Module ───────────────────────────────────────────
-builder.Services.AddScoped<ICommentRepository, MongoCommentRepository>();
-builder.Services.AddScoped<GetCarCommentsQuery>();
-builder.Services.AddScoped<AddCommentCommand>();
-
-
-builder.Services.AddScoped<GetCommentQuery>();
-builder.Services.AddScoped<UpdateCommentCommand>();
-builder.Services.AddScoped<DeleteCommentCommand>();
-
 
 // ── Auth Module ───────────────────────────────────────────────
 builder.Services.AddScoped<IUserRepository, MongoUserRepository>();
@@ -166,11 +145,24 @@ builder.Services.AddScoped<RegisterUserCommand>();
 builder.Services.AddScoped<LoginUserCommand>();
 builder.Services.AddScoped<LogoutUserCommand>();
 
+// ── Comments Module ───────────────────────────────────────────
+builder.Services.AddScoped<ICommentRepository, MongoCommentRepository>();
+builder.Services.AddScoped<GetCarCommentsQuery>();
+builder.Services.AddScoped<AddCommentCommand>();
+
+builder.Services.AddScoped<GetCommentQuery>();
+builder.Services.AddScoped<UpdateCommentCommand>();
+builder.Services.AddScoped<DeleteCommentCommand>();
 
 // ── Cars Module ───────────────────────────────────────────────
 builder.Services.AddScoped<ICarRepository, MongoCarRepository>();
 builder.Services.AddScoped<GetCarsQuery>();
 builder.Services.AddScoped<AddCarCommand>();
+
+// ── Lists Module ──────────────────────────────────────────────
+builder.Services.AddScoped<IListRepository, MongoListRepository>();
+builder.Services.AddScoped<CreateDefaultListCommand>();
+builder.Services.AddScoped<AddItemToListCommand>();
 
 
 // -- Prediction Module (ML modeli için)-------------------------
@@ -183,13 +175,6 @@ builder.Services.AddHttpClient<IPredictionService, PredictionService>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-
-// ── Lists Module ──────────────────────────────────────────────
-builder.Services.AddScoped<IListRepository, MongoListRepository>();
-builder.Services.AddScoped<CreateDefaultListCommand>();
-builder.Services.AddScoped<AddItemToListCommand>();
-
-
 // ── CORS ──────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
 {
@@ -201,18 +186,12 @@ builder.Services.AddCors(options =>
 // MediatR Entegrasyonu 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
-
-
-
 var app = builder.Build();
-
 
 app.UseExceptionHandler();
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -222,27 +201,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 
-
 app.UseStaticFiles();
-
 
 app.UseAuthentication();
 
-
 app.UseAuthorization();
-
 
 app.MapControllers();
 
-
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
-
 app.Run();
-
-
-
-
-
-
-
