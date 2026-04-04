@@ -23,6 +23,10 @@ using backend.API.Modules.Prediction.Infrastructure;
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
+var mongoConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionString));
+
+
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -113,11 +117,6 @@ if (!string.IsNullOrEmpty(redisConnectionString))
     });
 }
 
-
-// Shared configiruration
-builder.Services.AddSingleton<JwtTokenGenerator>();
-
-
 // ── Cars Module ───────────────────────────────────────────────
 builder.Services.AddScoped<ICarRepository, MongoCarRepository>();
 builder.Services.AddScoped<GetCarsQuery>();
@@ -127,6 +126,24 @@ builder.Services.AddScoped<IListRepository, MongoListRepository>();
 builder.Services.AddScoped<CreateDefaultListCommand>();
 builder.Services.AddScoped<AddItemToListCommand>();
 
+// ── Exception Handler ─────────────────────────────────────────
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+// Shared configiruration
+builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddSingleton<MongoTransactionManager>();
+builder.Services.AddSingleton<JwtTokenGenerator>();
+
+// ── Comments Module ───────────────────────────────────────────
+builder.Services.AddScoped<ICommentRepository, MongoCommentRepository>();
+builder.Services.AddScoped<GetCarCommentsQuery>();
+builder.Services.AddScoped<AddCommentCommand>();
+
+builder.Services.AddScoped<GetCommentQuery>();
+builder.Services.AddScoped<UpdateCommentCommand>();
+builder.Services.AddScoped<DeleteCommentCommand>();
+
 // ── Auth Module ───────────────────────────────────────────────
 builder.Services.AddScoped<IUserRepository, MongoUserRepository>();
 builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
@@ -135,6 +152,15 @@ builder.Services.AddScoped<RegisterUserCommand>();
 builder.Services.AddScoped<LoginUserCommand>();
 builder.Services.AddScoped<LogoutUserCommand>();
 
+// -- Prediction Module (ML modeli için)-------------------------
+builder.Services.AddHttpClient<IPredictionService, PredictionService>(client =>
+{
+    var fastApiUrl = Environment.GetEnvironmentVariable("FASTAPI_BASE_URL")
+        ?? builder.Configuration["FastApi:BaseUrl"]
+        ?? "http://127.0.0.1:8000";
+    client.BaseAddress = new Uri(fastApiUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // ── CORS ──────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
