@@ -27,6 +27,7 @@ var mongoConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRIN
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionString));
 
 
+
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -116,11 +117,18 @@ if (!string.IsNullOrEmpty(redisConnectionString))
     });
 }
 
+// ── Cars Module ───────────────────────────────────────────────
+builder.Services.AddScoped<ICarRepository, MongoCarRepository>();
+builder.Services.AddScoped<GetCarsQuery>();
+builder.Services.AddScoped<AddCarCommand>();
+// ── Lists Module ──────────────────────────────────────────────
+builder.Services.AddScoped<IListRepository, MongoListRepository>();
+builder.Services.AddScoped<CreateDefaultListCommand>();
+builder.Services.AddScoped<AddItemToListCommand>();
 
 // ── Exception Handler ─────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
-
 
 // Shared configiruration
 builder.Services.AddSingleton<MongoDbContext>();
@@ -144,11 +152,6 @@ builder.Services.AddScoped<RegisterUserCommand>();
 builder.Services.AddScoped<LoginUserCommand>();
 builder.Services.AddScoped<LogoutUserCommand>();
 
-// ── Cars Module ───────────────────────────────────────────────
-builder.Services.AddScoped<ICarRepository, MongoCarRepository>();
-builder.Services.AddScoped<GetCarsQuery>();
-builder.Services.AddScoped<AddCarCommand>();
-
 // -- Prediction Module (ML modeli için)-------------------------
 builder.Services.AddHttpClient<IPredictionService, PredictionService>(client =>
 {
@@ -158,11 +161,6 @@ builder.Services.AddHttpClient<IPredictionService, PredictionService>(client =>
     client.BaseAddress = new Uri(fastApiUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 });
-
-// ── Lists Module ──────────────────────────────────────────────
-builder.Services.AddScoped<IListRepository, MongoListRepository>();
-builder.Services.AddScoped<CreateDefaultListCommand>();
-builder.Services.AddScoped<AddItemToListCommand>();
 
 // ── CORS ──────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
