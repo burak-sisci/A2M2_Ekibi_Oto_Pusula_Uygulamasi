@@ -10,12 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Railway Git LFS desteklemiyor, model dosyasini GitHub'dan indir
-ARG MODEL_DOWNLOAD_URL
-RUN if [ -n "$MODEL_DOWNLOAD_URL" ]; then \
-      echo "Model indiriliyor..." && \
-      curl -L -o araba_modeli.pkl "$MODEL_DOWNLOAD_URL" && \
-      echo "Model indirildi: $(wc -c < araba_modeli.pkl) bytes"; \
-    fi
+RUN curl -L -o araba_modeli.pkl \
+    "https://media.githubusercontent.com/media/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi/main/ML_Model_V4/araba_modeli.pkl" \
+    && echo "Model indirildi: $(wc -c < araba_modeli.pkl) bytes"
 
 EXPOSE 8000
 
