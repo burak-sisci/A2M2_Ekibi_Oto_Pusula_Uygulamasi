@@ -23,6 +23,9 @@ using backend.API.Modules.Prediction.Infrastructure;
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 var mongoConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionString));
 
@@ -179,10 +182,11 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
     app.UseDeveloperExceptionPage();
 }
 
@@ -195,5 +199,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.Run();

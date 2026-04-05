@@ -137,7 +137,11 @@ const PricePredictor = () => {
       const res = await predictPrice(payload);
       setResult(res.data);
     } catch (err) {
-      toast.error(err.response?.data?.hata || err.response?.data?.message || 'Tahmin yapilamadi');
+      if (err.response?.status === 503) {
+        toast.warn(err.response?.data?.mesaj || 'Bu özellik şu an kullanılmıyor.');
+      } else {
+        toast.error(err.response?.data?.hata || err.response?.data?.message || 'Tahmin yapilamadi');
+      }
     } finally {
       setLoading(false);
     }

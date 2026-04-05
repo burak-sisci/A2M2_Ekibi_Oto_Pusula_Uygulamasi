@@ -20,8 +20,15 @@ public class PredictionController : ControllerBase
     [HttpPost("predict")]
     [ProducesResponseType(typeof(PricePredictionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> PredictPrice([FromBody] Car car)
     {
+        var fastApiUrl = Environment.GetEnvironmentVariable("FASTAPI_BASE_URL");
+        if (string.IsNullOrEmpty(fastApiUrl))
+        {
+            return StatusCode(503, new { mesaj = "Bu özellik şu an kullanılmıyor. ML modeli henüz aktif değil." });
+        }
+
         try
         {
             var result = await _mediator.Send(new PredictPriceQuery(car));
