@@ -1,3 +1,5 @@
+**Front-end Test Videosu:** [Youtube Link](https://youtu.be/t2m7DfLJ6tI)
+
 # Mehmet Oz - Web Frontend Gorevleri
 
 ## Modul C: Ozel Listeler ve Favoriler (Frontend)

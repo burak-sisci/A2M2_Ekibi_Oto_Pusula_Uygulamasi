@@ -1,3 +1,5 @@
+**Front-end Test Videosu:** [Youtube Link](https://youtu.be/sZ2mSsM0JjU)
+
 # Burak Sisci - Web Frontend Gorevleri
 
 ## Modul A: Kullanici ve Kimlik Yonetimi (Frontend)

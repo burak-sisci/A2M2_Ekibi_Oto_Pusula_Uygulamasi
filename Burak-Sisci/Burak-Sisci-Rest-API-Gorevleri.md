@@ -1,3 +1,5 @@
+**API Test Videosu:** [Youtube Link](https://youtu.be/sZ2mSsM0JjU)
+
 # Burak Sisci - REST API Gorevleri
 
 ## Modul A: Kullanici ve Kimlik Yonetimi (Backend)

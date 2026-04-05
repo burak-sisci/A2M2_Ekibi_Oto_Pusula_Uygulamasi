@@ -1,3 +1,6 @@
+**API Test Videosu:** [Youtube Link](https://youtu.be/t2m7DfLJ6tI)
+
+
 # Mehmet Oz - REST API Gorevleri
 
 ## Modul C: Ozel Listeler ve Favoriler (Backend)

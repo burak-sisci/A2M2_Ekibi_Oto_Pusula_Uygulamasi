@@ -1,3 +1,5 @@
+**Front-end Test Videosu:** [Youtube Link](https://youtu.be/EV1uHv6Xy6I)
+
 # Anil Elmaz - Web Frontend Gorevleri
 
 ## Modul B: Arac Ilanlari ve Yapay Zeka (Frontend)

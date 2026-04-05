@@ -1,3 +1,5 @@
+**API Test Videosu:** [Youtube Link](https://youtu.be/EV1uHv6Xy6I)
+
 # Anil Elmaz - REST API Gorevleri
 
 ## Modul B: Arac Ilanlari ve Yapay Zeka (Backend + ML)

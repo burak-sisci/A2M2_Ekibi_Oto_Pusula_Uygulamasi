@@ -1,3 +1,5 @@
+**Front-end Test Videosu:** [Youtube Link](https://youtu.be/sJ1E3SAboy8)
+
 # Mehmet Uludag - Web Frontend Gorevleri
 
 ## Modul D: Etkilesim ve Iletisim - Yorum ve Paylasim (Frontend)
