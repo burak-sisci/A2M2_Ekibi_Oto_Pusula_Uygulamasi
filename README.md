@@ -16,7 +16,7 @@
 
 ## Proje Linkleri
 
-- **REST API Adresi:** `https://backend-production-f151.up.railway.app/`
+- **REST API Adresi:** `https://backend-production-f151.up.railway.app/swagger`
 - **Web Frontend Adresi:** `https://a2m2ekibiotopusulauygulamasi-production.up.railway.app/`
 - **Makine Öğrenmesi Modeli Adresi:** `https://ml-model-production-8caa.up.railway.app/`
 

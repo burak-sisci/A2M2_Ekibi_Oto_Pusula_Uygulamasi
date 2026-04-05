@@ -1,6 +1,6 @@
 # REST API Görev Dağılımı
 
-**REST API Adresi:** [backend-production](https://backend-production-f151.up.railway.app/)
+**REST API Adresi:** [backend-production](https://backend-production-f151.up.railway.app/swagger)
 
 Bu dokümanda, proje ekibindeki her üyenin geliştirmekten sorumlu olduğu REST API metotları listelenmektedir.
 
