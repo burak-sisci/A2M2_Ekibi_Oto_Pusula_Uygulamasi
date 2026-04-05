@@ -1,0 +1,17 @@
+$kind: http-request
+description: >
+  İlanın başka platformlarda (WhatsApp, Telegram vb.) paylaşılabilmesi için
+  benzersiz ve izlenebilir bir kısa link üretilmesini sağlar.
+url: "{{baseUrl}}/cars/:carId/share"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: carId
+    value: 64b2c3d4e5f6789abc56789
+    description: Araç ilanının benzersiz kimlik numarası
+body:
+  type: text
+  content: ""
+examples: ./.resources/Paylaşım Linki Üretme.resources/examples
+order: 3000

@@ -1,0 +1,52 @@
+$kind: http-request
+description: >
+  Sistemdeki araç ilanlarının fiyat, kilometre, marka ve konuma göre
+  filtrelenerek listelenmesini sağlar.
+url: "{{baseUrl}}/cars?brand=Toyota&model=Corolla&minPrice=500000&maxPrice=1500\
+  000&minKm=0&maxKm=100000&fuelType=Benzin&gearType=Otomatik&year=2020&city=İst\
+  anbul&page=1&limit=10"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: brand
+    value: Toyota
+    description: Araç markası
+  - key: model
+    value: Corolla
+    description: Araç modeli
+  - key: minPrice
+    value: "500000"
+    description: Minimum fiyat (TL)
+  - key: maxPrice
+    value: "1500000"
+    description: Maksimum fiyat (TL)
+  - key: minKm
+    value: "0"
+    description: Minimum kilometre
+  - key: maxKm
+    value: "100000"
+    description: Maksimum kilometre
+  - key: fuelType
+    value: Benzin
+    description: Yakıt türü
+  - key: gearType
+    value: Otomatik
+    description: Vites türü
+  - key: year
+    value: "2020"
+    description: Model yılı
+  - key: city
+    value: İstanbul
+    description: Şehir
+  - key: page
+    value: "1"
+    description: Sayfa numarası (varsayılan 1)
+  - key: limit
+    value: "10"
+    description: Sayfa başına sonuç sayısı (varsayılan 10, maksimum 50)
+body:
+  type: text
+  content: ""
+examples: ./.resources/İlanları Filtreleyerek Listeleme.resources/examples
+order: 2000

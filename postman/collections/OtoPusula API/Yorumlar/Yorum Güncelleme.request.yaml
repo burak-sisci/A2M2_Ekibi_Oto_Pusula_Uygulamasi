@@ -1,0 +1,21 @@
+$kind: http-request
+description: >
+  Kullanıcının daha önceden yaptığı bir yorumdaki yazım hatalarını veya içeriği
+  sonradan düzenlemesini sağlar.
+url: "{{baseUrl}}/comments/:commentId"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: commentId
+    value: 64d4e5f6789abcdef234567
+    description: Yorumun benzersiz kimlik numarası
+body:
+  type: json
+  content: |-
+    {
+      "content": "Bu araç hâlâ satılık mı? Kaç yıldır kullanıyorsunuz?"
+    }
+examples: ./.resources/Yorum Güncelleme.resources/examples
+order: 4000

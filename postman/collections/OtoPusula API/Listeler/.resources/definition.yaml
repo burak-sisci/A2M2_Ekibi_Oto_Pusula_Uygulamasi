@@ -1,0 +1,4 @@
+$kind: collection
+description: Kullanıcı koleksiyonları ve favori listesi yönetimi (Listing
+  Service — port 5002)
+order: 5000

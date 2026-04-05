@@ -1,0 +1,3 @@
+$kind: collection
+description: Makine öğrenmesi tabanlı araç fiyat tahmin servisi (AI Service — port 5000)
+order: 4000

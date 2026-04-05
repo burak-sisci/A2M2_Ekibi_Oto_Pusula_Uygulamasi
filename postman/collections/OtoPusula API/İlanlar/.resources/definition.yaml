@@ -1,0 +1,4 @@
+$kind: collection
+description: Araç ilan oluşturma, listeleme, filtreleme, güncelleme ve silme
+  işlemleri (Listing Service — port 5002)
+order: 3000

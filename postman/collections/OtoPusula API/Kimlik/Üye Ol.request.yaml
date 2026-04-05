@@ -1,0 +1,23 @@
+$kind: http-request
+description: >
+  Kullanıcıların sisteme kayıt olmasını sağlar. İsim, email, telefon numarası,
+  cinsiyet (opsiyonel), doğum tarihi (opsiyonel) ve şifre alınarak veritabanında
+  yeni bir kullanıcı oluşturulur.
+url: "{{baseUrl}}/auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Burak Şişci",
+      "email": "burak@example.com",
+      "phone": "+905551234567",
+      "password": "Gizli1234!",
+      "gender": "Erkek",
+      "birthDate": "1998-05-15"
+    }
+examples: ./.resources/Üye Ol.resources/examples
+order: 1000

@@ -1,0 +1,17 @@
+$kind: http-request
+description: >
+  Kullanıcının kendi isteğiyle hesabını ve sistemdeki tüm kişisel verilerini
+  kalıcı olarak siler.
+url: "{{baseUrl}}/users/:userId"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: userId
+    value: 64a1b2c3d4e5f6789abc1234
+    description: Kullanıcının benzersiz kimlik numarası
+body:
+  type: text
+  content: ""
+examples: ./.resources/Hesap Silme.resources/examples
+order: 3000

@@ -1,0 +1,115 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/cars?brand=Toyota&model=Corolla&minPrice=500000&maxPrice=1500\
+    000&minKm=0&maxKm=100000&fuelType=Benzin&gearType=Otomatik&year=2020&city=İ\
+    stanbul&page=1&limit=10"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: brand
+      value: Toyota
+      description: Araç markası
+    - key: model
+      value: Corolla
+      description: Araç modeli
+    - key: minPrice
+      value: "500000"
+      description: Minimum fiyat (TL)
+    - key: maxPrice
+      value: "1500000"
+      description: Maksimum fiyat (TL)
+    - key: minKm
+      value: "0"
+      description: Minimum kilometre
+    - key: maxKm
+      value: "100000"
+      description: Maksimum kilometre
+    - key: fuelType
+      value: Benzin
+      description: Yakıt türü
+    - key: gearType
+      value: Otomatik
+      description: Vites türü
+    - key: year
+      value: "2020"
+      description: Model yılı
+    - key: city
+      value: İstanbul
+      description: Şehir
+    - key: page
+      value: "1"
+      description: Sayfa numarası (varsayılan 1)
+    - key: limit
+      value: "10"
+      description: Sayfa başına sonuç sayısı (varsayılan 10, maksimum 50)
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "_id": "64b2c3d4e5f6789abc56789",
+          "userId": "64a1b2c3d4e5f6789abc1234",
+          "brand": "Toyota",
+          "model": "Corolla",
+          "year": 2020,
+          "km": 45000,
+          "fuelType": "Benzin",
+          "gearType": "Otomatik",
+          "price": 850000,
+          "location": {
+            "city": "İstanbul",
+            "district": "Kadıköy"
+          },
+          "createdAt": "2026-02-15T10:00:00Z",
+          "description": "Kazasız, hasarsız, galeriden alınma araç.",
+          "images": [
+            "https://storage.example.com/cars/img1.jpg",
+            "https://storage.example.com/cars/img2.jpg"
+          ],
+          "damageInfo": [
+            "Kaput Değişen",
+            "Sağ Çamurluk Boyalı"
+          ],
+          "updatedAt": "2026-03-01T16:45:00Z"
+        },
+        {
+          "_id": "64b2c3d4e5f6789abc56789",
+          "userId": "64a1b2c3d4e5f6789abc1234",
+          "brand": "Toyota",
+          "model": "Corolla",
+          "year": 2020,
+          "km": 45000,
+          "fuelType": "Benzin",
+          "gearType": "Otomatik",
+          "price": 850000,
+          "location": {
+            "city": "İstanbul",
+            "district": "Kadıköy"
+          },
+          "createdAt": "2026-02-15T10:00:00Z",
+          "description": "Kazasız, hasarsız, galeriden alınma araç.",
+          "images": [
+            "https://storage.example.com/cars/img1.jpg",
+            "https://storage.example.com/cars/img2.jpg"
+          ],
+          "damageInfo": [
+            "Kaput Değişen",
+            "Sağ Çamurluk Boyalı"
+          ],
+          "updatedAt": "2026-03-01T16:45:00Z"
+        }
+      ]
+order: 1000

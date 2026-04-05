@@ -1,0 +1,4 @@
+$kind: collection
+description: Profil görüntüleme, güncelleme ve hesap silme işlemleri (Auth
+  Service — port 5001)
+order: 2000

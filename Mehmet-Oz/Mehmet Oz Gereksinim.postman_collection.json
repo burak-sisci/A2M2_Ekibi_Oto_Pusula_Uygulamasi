@@ -1,0 +1,160 @@
+{
+  "info": {
+    "_postman_id": "1ab2f0b3-1a5a-4114-b3ca-8d2f69049915",
+    "name": "Mehmet Oz Gereksinim",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53715648",
+    "_collection_link": "https://go.postman.co/collection/53715648-1ab2f0b3-1a5a-4114-b3ca-8d2f69049915?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "GetList",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQyM2Q4YTVhNDc0MjhkM2ViZjlhMDciLCJlbWFpbCI6Im1laG1ldG96MTIzQGhvdG1haWwuY29tIiwianRpIjoiZjlkOTE2MTItNDdiZi00NTg4LWFmNWMtM2IwZjA0ZGUwNzRmIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI2OWQyM2Q4YTVhNDc0MjhkM2ViZjlhMDciLCJleHAiOjE3NzUzOTYyMzksImlzcyI6IlNhaGliaW5kZW4uY29tIiwiYXVkIjoiU2FoaWJpbmRlbi5jb20ifQ.i-Io-rlU81iouRjC6T06L5cliXPBBVhUE-T3uGVUMeM",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/lists",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "lists"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "AddList",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQyM2Q4YTVhNDc0MjhkM2ViZjlhMDciLCJlbWFpbCI6Im1laG1ldG96MTIzQGhvdG1haWwuY29tIiwianRpIjoiZjlkOTE2MTItNDdiZi00NTg4LWFmNWMtM2IwZjA0ZGUwNzRmIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI2OWQyM2Q4YTVhNDc0MjhkM2ViZjlhMDciLCJleHAiOjE3NzUzOTYyMzksImlzcyI6IlNhaGliaW5kZW4uY29tIiwiYXVkIjoiU2FoaWJpbmRlbi5jb20ifQ.i-Io-rlU81iouRjC6T06L5cliXPBBVhUE-T3uGVUMeM",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"listName\": \"Beğendiğim Arabalarım\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/lists",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "lists"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "AddListItem",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQyM2Q4YTVhNDc0MjhkM2ViZjlhMDciLCJlbWFpbCI6Im1laG1ldG96MTIzQGhvdG1haWwuY29tIiwianRpIjoiZjlkOTE2MTItNDdiZi00NTg4LWFmNWMtM2IwZjA0ZGUwNzRmIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI2OWQyM2Q4YTVhNDc0MjhkM2ViZjlhMDciLCJleHAiOjE3NzUzOTYyMzksImlzcyI6IlNhaGliaW5kZW4uY29tIiwiYXVkIjoiU2FoaWJpbmRlbi5jb20ifQ.i-Io-rlU81iouRjC6T06L5cliXPBBVhUE-T3uGVUMeM",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"carId\": \"69d23c855a47428d3ebf998c\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/lists/69d26464122c2096126b9d71/items",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "lists",
+            "69d26464122c2096126b9d71",
+            "items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DeleteList",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQyM2Q4YTVhNDc0MjhkM2ViZjlhMDciLCJlbWFpbCI6Im1laG1ldG96MTIzQGhvdG1haWwuY29tIiwianRpIjoiZjlkOTE2MTItNDdiZi00NTg4LWFmNWMtM2IwZjA0ZGUwNzRmIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI2OWQyM2Q4YTVhNDc0MjhkM2ViZjlhMDciLCJleHAiOjE3NzUzOTYyMzksImlzcyI6IlNhaGliaW5kZW4uY29tIiwiYXVkIjoiU2FoaWJpbmRlbi5jb20ifQ.i-Io-rlU81iouRjC6T06L5cliXPBBVhUE-T3uGVUMeM",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/lists/69d26464122c2096126b9d71",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "lists",
+            "69d26464122c2096126b9d71"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

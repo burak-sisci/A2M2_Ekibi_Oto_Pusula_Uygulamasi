@@ -1,0 +1,41 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/cars/predict-price"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  body:
+    type: json
+    content: |-
+      {
+        "brand": "Toyota",
+        "model": "Corolla",
+        "year": 2020,
+        "km": 45000,
+        "fuelType": "Benzin",
+        "gearType": "Otomatik"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "estimatedPrice": 875000,
+        "priceRange": {
+          "min": 820000,
+          "max": 930000
+        },
+        "confidence": 0.87,
+        "generatedAt": "2026-03-07T14:00:00Z"
+      }
+order: 1000

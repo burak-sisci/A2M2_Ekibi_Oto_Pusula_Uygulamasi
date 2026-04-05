@@ -1,0 +1,36 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/cars/:carId"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  pathVariables:
+    - key: carId
+      value: 64b2c3d4e5f6789abc56789
+      description: Araç ilanının benzersiz kimlik numarası
+  body:
+    type: json
+    content: |-
+      {
+        "price": 800000,
+        "description": "Fiyat düşürüldü. Takas görüşülür."
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "İlan bulunamadı",
+        "code": "CAR_NOT_FOUND"
+      }
+order: 3000

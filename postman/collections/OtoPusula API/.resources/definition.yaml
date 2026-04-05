@@ -1,0 +1,23 @@
+$kind: collection
+description: >-
+  OtoPusula, ikinci el araç piyasasındaki belirsizlikleri ortadan kaldırmak
+  amacıyla geliştirilmiş, yapay zeka destekli bir otomotiv e-ticaret
+  platformunun RESTful API tasarımıdır. Kullanıcı yönetimi, araç ilanları, yapay
+  zeka fiyat tahmini, özel listeler ve sosyal etkileşim (yorum/paylaşım)
+  işlemlerini kapsar. JWT tabanlı kimlik doğrulama ile korunmaktadır.
+
+
+
+  Contact Support:
+   Name: A2M2 Ekibi
+   Email: burak.sisci@example.com
+variables:
+  baseUrl: http://localhost:5001
+auth:
+  - id: 626dcdbb-9ac3-4d2f-b736-f182ee748404
+    type: apikey
+    name: apikey auth
+    credentials:
+      key: Authorization
+      value: "{{apiKey}}"
+      in: header

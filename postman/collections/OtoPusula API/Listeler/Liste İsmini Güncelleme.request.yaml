@@ -1,0 +1,21 @@
+$kind: http-request
+description: >
+  Kullanıcının daha önce oluşturduğu bir listenin adını değiştirir. Varsayılan
+  Favoriler listesinin adı değiştirilemez.
+url: "{{baseUrl}}/lists/:listId"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: listId
+    value: 64c3d4e5f6789abcdef1234
+    description: Listenin benzersiz kimlik numarası
+body:
+  type: json
+  content: |-
+    {
+      "name": "Kıyaslanacaklar"
+    }
+examples: ./.resources/Liste İsmini Güncelleme.resources/examples
+order: 3000

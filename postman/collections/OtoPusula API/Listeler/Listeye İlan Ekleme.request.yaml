@@ -1,0 +1,21 @@
+$kind: http-request
+description: >
+  Beğenilen bir araç ilanının, kullanıcının seçtiği spesifik bir listeye (veya
+  varsayılan Favoriler listesine) eklenmesini sağlar.
+url: "{{baseUrl}}/lists/:listId/cars"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: listId
+    value: 64c3d4e5f6789abcdef1234
+    description: Listenin benzersiz kimlik numarası
+body:
+  type: json
+  content: |-
+    {
+      "carId": "64b2c3d4e5f6789abc56789"
+    }
+examples: ./.resources/Listeye İlan Ekleme.resources/examples
+order: 5000

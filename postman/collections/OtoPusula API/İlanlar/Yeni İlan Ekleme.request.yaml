@@ -1,0 +1,58 @@
+$kind: http-request
+description: >
+  Aracın teknik özellikleri (marka, km, boya vb.), konumu ve fotoğraflarıyla
+  birlikte sisteme yeni bir ilan olarak eklenmesini sağlar.
+url: "{{baseUrl}}/cars"
+method: POST
+headers:
+  Content-Type: multipart/form-data
+  Accept: application/json
+body:
+  type: formdata
+  content:
+    - type: text
+      key: brand
+      value: Toyota
+      description: Araç markası
+    - type: text
+      key: model
+      value: Corolla
+      description: Araç modeli
+    - type: text
+      key: year
+      value: "2020"
+      description: Model yılı
+    - type: text
+      key: km
+      value: "45000"
+      description: Araç kilometresi
+    - type: text
+      key: fuelType
+      value: Benzin
+      description: Yakıt türü
+    - type: text
+      key: gearType
+      value: Otomatik
+      description: Vites türü
+    - type: text
+      key: price
+      value: "850000"
+      description: Satış fiyatı (TL)
+    - type: text
+      key: location
+      value: "[object Object]"
+      description: Aracın bulunduğu konum
+    - type: text
+      key: description
+      value: Kazasız, hasarsız, galeriden alınma araç. Tüm bakımları yaptırılmıştır.
+      description: İlan açıklama metni
+    - type: text
+      key: damageInfo
+      value: Kaput Değişen,Sağ Çamurluk Boyalı
+      description: Hasar bilgileri (boya, değişen parçalar vb.)
+    - type: text
+      key: images
+      value: string,string
+      description: Araç fotoğrafları (dosya yükleme — multipart/form-data)
+examples: ./.resources/Yeni İlan Ekleme.resources/examples
+order: 1000

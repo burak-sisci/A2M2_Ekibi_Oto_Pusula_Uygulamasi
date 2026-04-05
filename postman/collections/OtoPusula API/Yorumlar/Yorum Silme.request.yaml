@@ -1,0 +1,15 @@
+$kind: http-request
+description: Kullanıcının kendi yaptığı bir yorumu sistemden kalıcı olarak siler.
+url: "{{baseUrl}}/comments/:commentId"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: commentId
+    value: 64d4e5f6789abcdef234567
+    description: Yorumun benzersiz kimlik numarası
+body:
+  type: text
+  content: ""
+examples: ./.resources/Yorum Silme.resources/examples
+order: 5000

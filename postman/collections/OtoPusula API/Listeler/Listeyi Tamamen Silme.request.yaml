@@ -1,0 +1,17 @@
+$kind: http-request
+description: >
+  Kullanıcının oluşturduğu özel bir koleksiyonu kökten siler. Varsayılan
+  Favoriler listesi silinemez.
+url: "{{baseUrl}}/lists/:listId"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: listId
+    value: 64c3d4e5f6789abcdef1234
+    description: Listenin benzersiz kimlik numarası
+body:
+  type: text
+  content: ""
+examples: ./.resources/Listeyi Tamamen Silme.resources/examples
+order: 4000

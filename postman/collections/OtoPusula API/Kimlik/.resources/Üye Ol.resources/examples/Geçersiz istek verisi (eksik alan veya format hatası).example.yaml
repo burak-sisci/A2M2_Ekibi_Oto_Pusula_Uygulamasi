@@ -1,0 +1,36 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/auth/register"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  body:
+    type: json
+    content: |-
+      {
+        "name": "Burak Şişci",
+        "email": "burak@example.com",
+        "phone": "+905551234567",
+        "password": "Gizli1234!",
+        "gender": "Erkek",
+        "birthDate": "1998-05-15"
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "İlan bulunamadı",
+        "code": "CAR_NOT_FOUND"
+      }
+order: 2000

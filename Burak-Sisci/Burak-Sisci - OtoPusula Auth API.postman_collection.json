@@ -1,0 +1,253 @@
+{
+  "info": {
+    "_postman_id": "bf9aa59c-c31b-4605-bda4-80e942c1485b",
+    "name": "Burak-Sisci - OtoPusula Auth API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53765367",
+    "_collection_link": "https://go.postman.co/collection/53765367-bf9aa59c-c31b-4605-bda4-80e942c1485b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Request 1 — Kayıt Ol (Register)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"burak@test.com\",\r\n  \"phone\": \"05551234567\",\r\n  \"password\": \"Test1234!\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/auth/register",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "description": "{  \n\"email\": \"[burak@test.com](https://mailto:burak@test.com)\",  \n\"phone\": \"05551234567\",  \n\"password\": \"Test1234!\"  \n}"
+      },
+      "response": []
+    },
+    {
+      "name": "Request 2 — Giriş Yap (Login)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"burak@test.com\",\r\n  \"password\": \"Test1234!\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/auth/login",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "{  \n\"email\": \"[burak@test.com](https://mailto:burak@test.com)\",  \n\"password\": \"Test1234!\"  \n}"
+      },
+      "response": []
+    },
+    {
+      "name": "Request 3 — Profil Görüntüle",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQyNTZiYjVhNDc0MjhkM2ViZjlhOGQiLCJlbWFpbCI6ImJ1cmFrQHRlc3QuY29tIiwianRpIjoiMzIxZmNiZmYtOTlmMi00YzlkLWE0ZTItMWM2MjM1Nzg1MDFjIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI2OWQyNTZiYjVhNDc0MjhkM2ViZjlhOGQiLCJleHAiOjE3NzUzOTYzNzUsImlzcyI6IlNhaGliaW5kZW4uY29tIiwiYXVkIjoiU2FoaWJpbmRlbi5jb20ifQ.P9EeeboA53JnX8Fm4Q5hKrj_U13eAuwfTQuQBJR8I1E",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"phone\": \"05551234567\",\r\n}"
+        },
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/auth/profile",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "auth",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Request 6 — Hesap Sil",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/auth/69d24df75a47428d3ebf9a43",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "auth",
+            "69d24df75a47428d3ebf9a43"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "request 5 —  FORGOT-PASSWORD",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQyNGU1YzVhNDc0MjhkM2ViZjlhNDciLCJlbWFpbCI6ImJ1cmFrQHRlc3QuY29tIiwianRpIjoiYTk5YTE1ZWItYzMzNS00OTIzLWI4MjMtNmNmZmNmMDZiNWE0IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI2OWQyNGU1YzVhNDc0MjhkM2ViZjlhNDciLCJleHAiOjE3NzUzOTM5MDAsImlzcyI6IlNhaGliaW5kZW4uY29tIiwiYXVkIjoiU2FoaWJpbmRlbi5jb20ifQ.rCfFMSBLO7x3FyOkDY9cy27VeBh2QPNLmP77aAY9jNM",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"burak@test.com\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/auth/forgot-password",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "auth",
+            "forgot-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "request 4 — Reset-Password",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQyNTZiYjVhNDc0MjhkM2ViZjlhOGQiLCJlbWFpbCI6ImJ1cmFrQHRlc3QuY29tIiwianRpIjoiNDI5ZTI2MjEtMjAwZS00OGY4LTlkOTUtYTVmYTJlNWVmOGY2IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI2OWQyNTZiYjVhNDc0MjhkM2ViZjlhOGQiLCJleHAiOjE3NzUzOTYxNTksImlzcyI6IlNhaGliaW5kZW4uY29tIiwiYXVkIjoiU2FoaWJpbmRlbi5jb20ifQ.Ntw_bVMDNd0i-CNe10aIOUYXo8TZg7L34S5kr-e1A1E",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWQyNTZiYjVhNDc0MjhkM2ViZjlhOGQiLCJlbWFpbCI6ImJ1cmFrQHRlc3QuY29tIiwianRpIjoiYjliOWEyZjktZDdjOS00YThmLWFkOGUtZGE4ZTM4OGViODc4IiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiI2OWQyNTZiYjVhNDc0MjhkM2ViZjlhOGQiLCJleHAiOjE3NzUzOTYxMTgsImlzcyI6IlNhaGliaW5kZW4uY29tIiwiYXVkIjoiU2FoaWJpbmRlbi5jb20ifQ.iAe2Vbbt0cjcnd-ZKBG1in8aHo1woUQ2NlSWhRu6QY8\",\r\n  \"newPassword\": \"YeniSifre123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://backend-production-f151.up.railway.app/auth/reset-password",
+          "protocol": "https",
+          "host": [
+            "backend-production-f151",
+            "up",
+            "railway",
+            "app"
+          ],
+          "path": [
+            "auth",
+            "reset-password"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    }
+  ]
+}

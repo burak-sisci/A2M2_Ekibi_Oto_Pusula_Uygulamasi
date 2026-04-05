@@ -1,0 +1,18 @@
+$kind: http-request
+description: >
+  Kullanıcıların "Alınacaklar", "Kıyaslanacaklar" gibi isimlerle yeni
+  koleksiyonlar oluşturmasını sağlar. Favoriler listesi kayıt anında otomatik
+  açılır.
+url: "{{baseUrl}}/lists"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Alınacaklar"
+    }
+examples: ./.resources/Yeni Liste Oluşturma.resources/examples
+order: 1000

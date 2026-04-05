@@ -1,0 +1,36 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/users/:userId"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  pathVariables:
+    - key: userId
+      value: 64a1b2c3d4e5f6789abc1234
+      description: Kullanıcının benzersiz kimlik numarası
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "_id": "64a1b2c3d4e5f6789abc1234",
+        "name": "Burak Şişci",
+        "email": "burak@example.com",
+        "phone": "+905551234567",
+        "createdAt": "2025-01-10T09:00:00Z",
+        "gender": "Erkek",
+        "birthDate": "1998-05-15",
+        "updatedAt": "2026-03-07T14:30:00Z"
+      }
+order: 1000

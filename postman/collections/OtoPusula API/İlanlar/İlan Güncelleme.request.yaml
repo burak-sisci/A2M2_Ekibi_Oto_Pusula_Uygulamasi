@@ -1,0 +1,20 @@
+$kind: http-request
+description: İlan sahibinin araç fiyatını veya açıklamasını sonradan düzenlemesini sağlar.
+url: "{{baseUrl}}/cars/:carId"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: carId
+    value: 64b2c3d4e5f6789abc56789
+    description: Araç ilanının benzersiz kimlik numarası
+body:
+  type: json
+  content: |-
+    {
+      "price": 800000,
+      "description": "Fiyat düşürüldü. Takas görüşülür."
+    }
+examples: ./.resources/İlan Güncelleme.resources/examples
+order: 4000

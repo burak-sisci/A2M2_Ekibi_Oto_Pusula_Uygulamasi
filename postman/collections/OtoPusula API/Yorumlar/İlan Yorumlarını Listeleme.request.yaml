@@ -1,0 +1,23 @@
+$kind: http-request
+description: Bir ilana yapılmış olan tüm yorumların tarih sırasına göre
+  listelenmesini sağlar.
+url: "{{baseUrl}}/cars/:carId/comments?page=1&limit=10"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: page
+    value: "1"
+    description: Sayfa numarası (varsayılan 1)
+  - key: limit
+    value: "10"
+    description: Sayfa başına sonuç sayısı (varsayılan 10, maksimum 50)
+pathVariables:
+  - key: carId
+    value: 64b2c3d4e5f6789abc56789
+    description: Araç ilanının benzersiz kimlik numarası
+body:
+  type: text
+  content: ""
+examples: ./.resources/İlan Yorumlarını Listeleme.resources/examples
+order: 1000

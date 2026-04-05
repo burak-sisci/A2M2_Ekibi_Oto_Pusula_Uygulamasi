@@ -1,0 +1,19 @@
+$kind: http-request
+description: >
+  Kullanıcının email veya telefon numarası ile şifresini kullanarak sisteme
+  giriş yapmasını sağlar. Başarılı girişte JWT erişim token'ı (yetki belgesi)
+  döndürür.
+url: "{{baseUrl}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "identifier": "burak@example.com",
+      "password": "Gizli1234!"
+    }
+examples: ./.resources/Kullanıcı Girişi.resources/examples
+order: 2000

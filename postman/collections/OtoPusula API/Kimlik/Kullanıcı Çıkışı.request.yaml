@@ -1,0 +1,14 @@
+$kind: http-request
+description: >
+  Sisteme giriş yapmış olan kullanıcının oturumunu güvenli bir şekilde
+  sonlandırır. Kullanıcının cihazındaki aktif erişim token'ı geçersiz kılınarak
+  başkalarının hesaba erişmesi engellenir.
+url: "{{baseUrl}}/auth/logout"
+method: POST
+headers:
+  Accept: application/json
+body:
+  type: text
+  content: ""
+examples: ./.resources/Kullanıcı Çıkışı.resources/examples
+order: 3000
