@@ -8,7 +8,9 @@ public class MongoDbContext
 
     public MongoDbContext(IMongoClient mongoClient, IConfiguration configuration)
     {
-        var databaseName = configuration["DATABASE_NAME"];
+        var databaseName = Environment.GetEnvironmentVariable("DATABASE_NAME")
+            ?? configuration["MongoDB:DatabaseName"]
+            ?? "denemedb";
         _database = mongoClient.GetDatabase(databaseName);
     }
 
