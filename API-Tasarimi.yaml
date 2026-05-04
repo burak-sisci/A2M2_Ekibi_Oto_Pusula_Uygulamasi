@@ -1161,6 +1161,84 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  # YENİ: Yorum Beğenme
+  /comments/{commentId}/like:
+    parameters:
+      - name: commentId
+        in: path
+        required: true
+        description: Yorumun benzersiz kimlik numarası
+        schema:
+          type: string
+        example: "64d4e5f6789abcdef234567"
+
+    post:
+      tags:
+        - Yorumlar
+      summary: Yorum Beğenme
+      operationId: likeComment
+      description: >
+        Kullanıcının bir yorumu beğenmesini sağlar. Her kullanıcı aynı yorumu
+        yalnızca bir kez beğenebilir. Kendi yorumunu beğenmek mümkün değildir.
+      responses:
+        "200":
+          description: Yorum başarıyla beğenildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentLikeResponse'
+        "400":
+          description: Yorum zaten beğenilmiş veya kendi yorumu beğenilemez
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Yorum bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Yorumlar
+      summary: Yorum Beğenisini Geri Al
+      operationId: unlikeComment
+      description: >
+        Kullanıcının daha önce beğendiği bir yorumdan beğenisini geri almasını sağlar.
+      responses:
+        "200":
+          description: Beğeni başarıyla geri alındı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentLikeResponse'
+        "400":
+          description: Yorum zaten beğenilmemiş
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Kimlik doğrulama başarısız (token eksik veya geçersiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Yorum bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 # ─────────────────────────────────────────────────────
 # COMPONENTS
 # ─────────────────────────────────────────────────────
@@ -1751,6 +1829,14 @@ components:
           type: string
           description: Yorum metni
           example: "Bu araç hâlâ satılık mı? Kaç yıldır kullanıyorsunuz?"
+        likeCount:
+          type: integer
+          description: Yorumun toplam beğeni sayısı
+          example: 4
+        isLikedByMe:
+          type: boolean
+          description: İsteği yapan kullanıcının bu yorumu beğenip beğenmediği
+          example: false
         createdAt:
           type: string
           format: date-time
@@ -1761,7 +1847,31 @@ components:
         - userId
         - carId
         - content
+        - likeCount
+        - isLikedByMe
         - createdAt
+
+    # YENİ: Yorum beğeni işlemi yanıt şeması
+    CommentLikeResponse:
+      type: object
+      description: Yorum beğenme veya beğeniyi geri alma işleminin sonucunu temsil eden model
+      properties:
+        commentId:
+          type: string
+          description: Beğenilen veya beğenisi geri alınan yorumun kimliği
+          example: "64d4e5f6789abcdef234567"
+        likeCount:
+          type: integer
+          description: İşlem sonrası güncel beğeni sayısı
+          example: 5
+        isLikedByMe:
+          type: boolean
+          description: İsteği yapan kullanıcının beğeni durumu (true = beğendi, false = beğenmedi)
+          example: true
+      required:
+        - commentId
+        - likeCount
+        - isLikedByMe
 
     ShareLinkResponse:
       type: object
