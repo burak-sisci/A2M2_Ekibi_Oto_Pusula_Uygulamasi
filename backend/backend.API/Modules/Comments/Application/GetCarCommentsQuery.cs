@@ -122,9 +122,6 @@ public class LikeCommentCommand
         var yorum = await _commentRepository.GetByCommentIdAsync(commentId)
             ?? throw new KeyNotFoundException("Yorum bulunamadı.");
 
-        if (yorum.UserId == userId)
-            throw new InvalidOperationException("Kendi yorumunuzu beğenemezsiniz.");
-
         if (yorum.LikedByUsers.Contains(userId))
             throw new InvalidOperationException("Bu yorum zaten beğenilmiş.");
 

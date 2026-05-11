@@ -98,9 +98,45 @@ class _ListDetailView extends StatelessWidget {
                   isDangerous: true,
                 ),
                 onDismissed: (_) => vm.removeCarFromList(car.id),
-                child: CarCard(
-                  car: car,
-                  onTap: () => context.push(AppRoutes.carDetailPath(car.id)),
+                child: Stack(
+                  children: [
+                    CarCard(
+                      car: car,
+                      onTap: () =>
+                          context.push(AppRoutes.carDetailPath(car.id)),
+                    ),
+                    Positioned(
+                      top: AppConstants.space8,
+                      right: AppConstants.space8,
+                      child: Material(
+                        color: Colors.black54,
+                        shape: const CircleBorder(),
+                        child: Semantics(
+                          label: 'İlanı listeden çıkar',
+                          button: true,
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            tooltip: AppStrings.removeFromList,
+                            onPressed: () async {
+                              final ok = await ConfirmDialog.show(
+                                context,
+                                title: AppStrings.removeFromList,
+                                message:
+                                    'İlanı listeden çıkarmak istiyor musunuz?',
+                                confirmLabel: 'Çıkar',
+                                isDangerous: true,
+                              );
+                              if (ok) vm.removeCarFromList(car.id);
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -113,32 +149,64 @@ class _ListDetailView extends StatelessWidget {
     BuildContext context,
     ListDetailViewModel vm,
   ) async {
-    final controller = TextEditingController(text: vm.userList?.name ?? '');
-    final confirmed = await showDialog<bool>(
+    final newName = await showDialog<String>(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: const Text('Listeyi Yeniden Adlandır'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'Yeni liste adı'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(false),
-            child: const Text(AppStrings.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(true),
-            child: const Text(AppStrings.save),
-          ),
-        ],
+      builder: (dialogCtx) => _RenameListDialog(
+        initialName: vm.userList?.name ?? '',
       ),
     );
-    final newName = controller.text.trim();
-    controller.dispose();
-    if (confirmed == true && newName.isNotEmpty) {
+    if (newName != null && newName.isNotEmpty) {
       vm.rename(newName);
     }
+  }
+}
+
+class _RenameListDialog extends StatefulWidget {
+  final String initialName;
+
+  const _RenameListDialog({required this.initialName});
+
+  @override
+  State<_RenameListDialog> createState() => _RenameListDialogState();
+}
+
+class _RenameListDialogState extends State<_RenameListDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialName);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Listeyi Yeniden Adlandır'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(hintText: 'Yeni liste adı'),
+        onSubmitted: (_) =>
+            Navigator.of(context).pop(_controller.text.trim()),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(AppStrings.cancel),
+        ),
+        TextButton(
+          onPressed: () =>
+              Navigator.of(context).pop(_controller.text.trim()),
+          child: const Text(AppStrings.save),
+        ),
+      ],
+    );
   }
 }

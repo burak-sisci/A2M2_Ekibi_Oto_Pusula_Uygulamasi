@@ -101,33 +101,13 @@ class _ListsView extends StatelessWidget {
     BuildContext context,
     UserListsViewModel vm,
   ) async {
-    final controller = TextEditingController();
-    final confirmed = await showDialog<bool>(
+    final name = await showDialog<String>(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: const Text(AppStrings.listCreateTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration:
-              const InputDecoration(hintText: AppStrings.listNameLabel),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(false),
-            child: const Text(AppStrings.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(true),
-            child: const Text(AppStrings.save),
-          ),
-        ],
-      ),
+      builder: (dialogCtx) => const _CreateListDialog(),
     );
-    if (confirmed == true && controller.text.trim().isNotEmpty) {
-      vm.createList(controller.text.trim());
+    if (name != null && name.isNotEmpty) {
+      vm.createList(name);
     }
-    controller.dispose();
   }
 
   Future<void> _confirmDelete(
@@ -143,5 +123,54 @@ class _ListsView extends StatelessWidget {
       isDangerous: true,
     );
     if (ok) vm.deleteList(listId);
+  }
+}
+
+class _CreateListDialog extends StatefulWidget {
+  const _CreateListDialog();
+
+  @override
+  State<_CreateListDialog> createState() => _CreateListDialogState();
+}
+
+class _CreateListDialogState extends State<_CreateListDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text(AppStrings.listCreateTitle),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration:
+            const InputDecoration(hintText: AppStrings.listNameLabel),
+        onSubmitted: (_) =>
+            Navigator.of(context).pop(_controller.text.trim()),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(AppStrings.cancel),
+        ),
+        TextButton(
+          onPressed: () =>
+              Navigator.of(context).pop(_controller.text.trim()),
+          child: const Text(AppStrings.save),
+        ),
+      ],
+    );
   }
 }

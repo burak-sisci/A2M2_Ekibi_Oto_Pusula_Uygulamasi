@@ -71,20 +71,16 @@ class CommentTile extends StatelessWidget {
                 Row(
                   children: [
                     Semantics(
-                      label: _isOwner
-                          ? 'Beğeni sayısı'
-                          : (_isLiked ? 'Beğeniyi Geri Al' : 'Beğen'),
+                      label: _isLiked ? 'Beğeniyi Geri Al' : 'Beğen',
                       child: InkWell(
                         borderRadius: BorderRadius.circular(AppConstants.radiusCard),
-                        onTap: _isOwner
-                            ? null
-                            : () {
-                                if (_isLiked) {
-                                  onUnlike?.call();
-                                } else {
-                                  onLike?.call();
-                                }
-                              },
+                        onTap: () {
+                          if (_isLiked) {
+                            onUnlike?.call();
+                          } else {
+                            onLike?.call();
+                          }
+                        },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppConstants.space8,
@@ -98,22 +94,18 @@ class CommentTile extends StatelessWidget {
                                     ? Icons.thumb_up
                                     : Icons.thumb_up_outlined,
                                 size: 16,
-                                color: _isOwner
-                                    ? AppColors.textSecondary
-                                    : (_isLiked
-                                        ? AppColors.primary
-                                        : AppColors.textSecondary),
+                                color: _isLiked
+                                    ? AppColors.primary
+                                    : AppColors.textSecondary,
                               ),
                               if (comment.likeCount > 0) ...[
                                 const SizedBox(width: 4),
                                 Text(
                                   '${comment.likeCount}',
                                   style: AppTextStyles.small.copyWith(
-                                    color: _isOwner
-                                        ? AppColors.textSecondary
-                                        : (_isLiked
-                                            ? AppColors.primary
-                                            : AppColors.textSecondary),
+                                    color: _isLiked
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary,
                                   ),
                                 ),
                               ],
