@@ -13,26 +13,7 @@ public class MongoCarRepository : ICarRepository
     public MongoCarRepository(MongoDbContext context)
     {
         _collection = context.GetCollection<Car>("cars");
-        CreateIndexes();
-    }
-
-    private void CreateIndexes()
-    {
-        var compoundIndex = new CreateIndexModel<Car>(
-            Builders<Car>.IndexKeys
-                .Ascending(c => c.Marka)
-                .Ascending(c => c.Seri)
-                .Ascending(c => c.Model)
-                .Ascending(c => c.Yil)
-                .Ascending(c => c.Fiyat)
-                .Ascending(c => c.Kilometre)
-                .Ascending("fuelType")          // YakitTipi
-                .Ascending("transmissionType")  // VitesTipi
-                .Ascending("bodyType")          // KasaTipi
-                .Ascending("driveType")         // Cekis
-                .Ascending(c => c.Konum));
-
-        _collection.Indexes.CreateOne(compoundIndex);
+        // Indexler artık MongoIndexInitializer (IHostedService) tarafından startup'ta oluşturulur.
     }
 
     public async Task<PagedResult<Car>> GetAllAsync(CarsFilter filter, PaginationParameters pagination)
@@ -94,8 +75,8 @@ public class MongoCarRepository : ICarRepository
         if (filter.KasaTipi.HasValue)
             filterDef &= builder.Eq(c => c.KasaTipi, filter.KasaTipi.Value);
 
-       // if (filter.Cekis.HasValue)
-           // filterDef &= builder.Eq(c=> c.Cekis,filter.Cekis.Value);
+        if (filter.Cekis.HasValue)
+            filterDef &= builder.Eq(c => c.Cekis, filter.Cekis.Value);
 
         if (filter.AracDurumu.HasValue)
             filterDef &= builder.Eq(c => c.AracDurumu, filter.AracDurumu.Value);

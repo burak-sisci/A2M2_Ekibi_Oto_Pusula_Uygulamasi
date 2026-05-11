@@ -13,62 +13,87 @@ public class MongoCommentRepository : ICommentRepository
     public MongoCommentRepository(MongoDbContext mongoDbContext)
     {
         _mongoCollection = mongoDbContext.GetCollection<Comment>("comments");
-        CreateIndexes();
+        // Indexler artık MongoIndexInitializer (IHostedService) tarafından startup'ta oluşturulur.
     }
 
-    private void CreateIndexes()
-    {
-        var carIdIndex = new CreateIndexModel<Comment>(
-            Builders<Comment>.IndexKeys.Ascending(c => c.CarId));
-        _mongoCollection.Indexes.CreateOne(carIdIndex);
-    }
-
-    public async Task CreateAsync(Comment comment)
-    => await _mongoCollection.InsertOneAsync(comment);
+    public async Task CreateAsync(Comment yorum)
+        => await _mongoCollection.InsertOneAsync(yorum);
 
     public async Task<bool> DeleteAsync(string id)
     {
-        var filter = Builders<Comment>.Filter.Eq(x => x.Id, id);
-        await _mongoCollection.DeleteOneAsync(filter);
-        return true;
+        var sonuc = await _mongoCollection.DeleteOneAsync(x => x.Id == id);
+        return sonuc.DeletedCount > 0;
     }
 
-    public async Task<PagedResult<Comment>> GetByCarIdAsync(string carId, PaginationParameters pagination)
+    public async Task<PagedResult<Comment>> GetByCarIdAsync(string carId, PaginationParameters sayfalama)
     {
-        var filter = Builders<Comment>.Filter.Eq(c => c.CarId, carId);
-        var total = await _mongoCollection.CountDocumentsAsync(filter);
-        var data = await _mongoCollection.Find(filter)
+        var filtre = Builders<Comment>.Filter.Eq(c => c.CarId, carId);
+        var toplam = await _mongoCollection.CountDocumentsAsync(filtre);
+        var veri   = await _mongoCollection.Find(filtre)
             .SortByDescending(c => c.CreatedAt)
-            .Skip(pagination.Offset)
-            .Limit(pagination.Limit)
+            .Skip(sayfalama.Offset)
+            .Limit(sayfalama.Limit)
             .ToListAsync();
 
-        return PagedResult<Comment>.Create(data, total, pagination.Limit, pagination.Offset);
+        return PagedResult<Comment>.Create(veri, toplam, sayfalama.Limit, sayfalama.Offset);
     }
 
-    public async Task<Comment> GetByCommentIdAsync(string id)
+    public async Task<PagedResult<Comment>> GetByUserIdAsync(string userId, PaginationParameters sayfalama)
     {
-        var filter = Builders<Comment>.Filter.Eq(x => x.Id, id);
-        var comment = await _mongoCollection.Find(filter).FirstOrDefaultAsync();
-        return comment;
+        var filtre = Builders<Comment>.Filter.Eq(c => c.UserId, userId);
+        var toplam = await _mongoCollection.CountDocumentsAsync(filtre);
+        var veri   = await _mongoCollection.Find(filtre)
+            .SortByDescending(c => c.CreatedAt)
+            .Skip(sayfalama.Offset)
+            .Limit(sayfalama.Limit)
+            .ToListAsync();
 
+        return PagedResult<Comment>.Create(veri, toplam, sayfalama.Limit, sayfalama.Offset);
     }
 
-    public async Task UpdateAsync(Comment comment)
+    public async Task<Comment?> GetByCommentIdAsync(string id)
     {
-        var filter = Builders<Comment>.Filter.Eq(x => x.Id, comment.Id);
-        await _mongoCollection.ReplaceOneAsync(filter, comment);
+        var filtre = Builders<Comment>.Filter.Eq(x => x.Id, id);
+        return await _mongoCollection.Find(filtre).FirstOrDefaultAsync();
+    }
+
+    public async Task UpdateAsync(Comment yorum)
+    {
+        var filtre = Builders<Comment>.Filter.Eq(x => x.Id, yorum.Id);
+        await _mongoCollection.ReplaceOneAsync(filtre, yorum);
     }
 
     public async Task DeleteAllByUserIdAsync(string userId)
-    {
-
-        await _mongoCollection.DeleteManyAsync(c => c.UserId == userId);
-    }
+        => await _mongoCollection.DeleteManyAsync(c => c.UserId == userId);
 
     public async Task DeleteAllByCarIdAsync(string carId)
-    {
+        => await _mongoCollection.DeleteManyAsync(c => c.CarId == carId);
 
-        await _mongoCollection.DeleteManyAsync(c => c.CarId == carId);
+    public async Task<bool> LikeAsync(string commentId, string userId)
+    {
+        var guncelleme = Builders<Comment>.Update
+            .AddToSet(c => c.LikedByUsers, userId)
+            .Inc(c => c.LikeCount, 1)
+            .Set(c => c.UpdatedAt, DateTime.UtcNow);
+
+        var sonuc = await _mongoCollection.UpdateOneAsync(
+            c => c.Id == commentId && !c.LikedByUsers.Contains(userId),
+            guncelleme);
+
+        return sonuc.ModifiedCount > 0;
+    }
+
+    public async Task<bool> UnlikeAsync(string commentId, string userId)
+    {
+        var guncelleme = Builders<Comment>.Update
+            .Pull(c => c.LikedByUsers, userId)
+            .Inc(c => c.LikeCount, -1)
+            .Set(c => c.UpdatedAt, DateTime.UtcNow);
+
+        var sonuc = await _mongoCollection.UpdateOneAsync(
+            c => c.Id == commentId && c.LikedByUsers.Contains(userId),
+            guncelleme);
+
+        return sonuc.ModifiedCount > 0;
     }
 }

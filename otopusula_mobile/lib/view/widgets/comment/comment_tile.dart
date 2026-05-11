@@ -11,6 +11,7 @@ class CommentTile extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onEdit;
   final VoidCallback? onLike;
+  final VoidCallback? onUnlike;
 
   const CommentTile({
     super.key,
@@ -19,9 +20,12 @@ class CommentTile extends StatelessWidget {
     this.onDelete,
     this.onEdit,
     this.onLike,
+    this.onUnlike,
   });
 
   bool get _isOwner => currentUserId != null && currentUserId == comment.userId;
+  bool get _isLiked =>
+      currentUserId != null && comment.likedByUsers.contains(currentUserId);
 
   @override
   Widget build(BuildContext context) {
@@ -63,20 +67,63 @@ class CommentTile extends StatelessWidget {
                 ),
                 const SizedBox(height: AppConstants.space4),
                 Text(comment.content, style: AppTextStyles.body),
-                // TODO: Like sayısı backend'den gelince buraya eklenir
-                if (onLike != null)
-                  Semantics(
-                    label: 'Beğen',
-                    child: IconButton(
-                      onPressed: onLike,
-                      icon: const Icon(Icons.thumb_up_outlined,
-                          size: 18, color: AppColors.textSecondary),
-                      constraints: const BoxConstraints(
-                        minWidth: AppConstants.minTapTarget,
-                        minHeight: AppConstants.minTapTarget,
+                const SizedBox(height: AppConstants.space4),
+                Row(
+                  children: [
+                    Semantics(
+                      label: _isOwner
+                          ? 'Beğeni sayısı'
+                          : (_isLiked ? 'Beğeniyi Geri Al' : 'Beğen'),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+                        onTap: _isOwner
+                            ? null
+                            : () {
+                                if (_isLiked) {
+                                  onUnlike?.call();
+                                } else {
+                                  onLike?.call();
+                                }
+                              },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppConstants.space8,
+                            vertical: AppConstants.space4,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _isLiked
+                                    ? Icons.thumb_up
+                                    : Icons.thumb_up_outlined,
+                                size: 16,
+                                color: _isOwner
+                                    ? AppColors.textSecondary
+                                    : (_isLiked
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary),
+                              ),
+                              if (comment.likeCount > 0) ...[
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${comment.likeCount}',
+                                  style: AppTextStyles.small.copyWith(
+                                    color: _isOwner
+                                        ? AppColors.textSecondary
+                                        : (_isLiked
+                                            ? AppColors.primary
+                                            : AppColors.textSecondary),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
+                ),
               ],
             ),
           ),

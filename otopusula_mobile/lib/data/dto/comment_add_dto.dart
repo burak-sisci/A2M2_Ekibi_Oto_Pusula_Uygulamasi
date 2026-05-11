@@ -3,5 +3,5 @@ class CommentAddDto {
 
   const CommentAddDto({required this.content});
 
-  Map<String, dynamic> toJson() => {'content': content};
+  Map<String, dynamic> toJson() => {'icerik': content};
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../car/car_list_page.dart';
-import '../list/lists_page.dart';
 import '../car/price_predict_page.dart';
+import '../list/lists_page.dart';
 import '../profile/profile_page.dart';
 
 // Alt sekme kabuğu: İlanlar / Listelerim / Fiyat Tahmini / Profil (developer.md §8)
@@ -16,13 +16,20 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+  // Her tab için reload tetiklemek amacıyla ayrı key kullanılır
+  int _listsKey = 0;
 
-  static const _tabs = [
-    CarListPage(),
-    ListsPage(),
-    PricePredictPage(),
-    ProfilePage(),
-  ];
+  void _onTabTap(int i) {
+    if (i == 1 && _currentIndex != 1) {
+      // Listelerim tab'ına geçince ListsPage'i yeniden oluştur (stale data fix)
+      setState(() {
+        _listsKey++;
+        _currentIndex = i;
+      });
+    } else {
+      setState(() => _currentIndex = i);
+    }
+  }
 
   static const _labels = ['İlanlar', 'Listelerim', 'Fiyat Tahmini', 'Profil'];
 
@@ -43,12 +50,20 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _tabs),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          const CarListPage(),
+          ListsPage(key: ValueKey(_listsKey)),
+          const PricePredictPage(),
+          const ProfilePage(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        onTap: _onTabTap,
         items: List.generate(
-          _tabs.length,
+          4,
           (i) => BottomNavigationBarItem(
             icon: Icon(_icons[i]),
             activeIcon: Icon(_activeIcons[i]),

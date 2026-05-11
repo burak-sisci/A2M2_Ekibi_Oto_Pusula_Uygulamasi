@@ -6,23 +6,26 @@ namespace backend.API.Modules.Cars.Application;
 public class DeleteCarCommandHandler : IRequestHandler<DeleteCarCommand, bool>
 {
     private readonly ICarRepository _carRepository;
+    private readonly ICarCacheService _cache;
     private readonly IMediator _mediator;
 
-    public DeleteCarCommandHandler(ICarRepository carRepository, IMediator mediator)
+    public DeleteCarCommandHandler(ICarRepository carRepository, ICarCacheService cache, IMediator mediator)
     {
         _carRepository = carRepository;
-        _mediator = mediator;
+        _cache         = cache;
+        _mediator      = mediator;
     }
 
     public async Task<bool> Handle(DeleteCarCommand request, CancellationToken cancellationToken)
     {
-        var isDeleted = await _carRepository.DeleteAsync(request.CarId);
+        var silindi = await _carRepository.DeleteAsync(request.CarId);
 
-        if (isDeleted)
+        if (silindi)
         {
+            await _cache.InvalidateListCacheAsync();
             await _mediator.Publish(new CarDeletedEvent(request.CarId), cancellationToken);
         }
 
-        return isDeleted;
+        return silindi;
     }
 }

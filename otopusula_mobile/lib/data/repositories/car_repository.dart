@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../core/network/api_client.dart';
 import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_constants.dart';
@@ -33,6 +34,7 @@ class CarFilterParams {
     this.limit = AppConstants.defaultPageSize,
   });
 
+  // Backend: GET /cars?limit=&offset=&brand=&model=&location=&minPrice=&maxPrice=&minKm=&maxKm=&fuelType=&gearType=&year=
   Map<String, dynamic> toQueryParameters() => {
         if (brand != null) 'brand': brand,
         if (model != null) 'model': model,
@@ -43,9 +45,9 @@ class CarFilterParams {
         if (fuelType != null) 'fuelType': fuelType,
         if (gearType != null) 'gearType': gearType,
         if (year != null) 'year': year.toString(),
-        if (city != null) 'city': city,
-        'page': page.toString(),
+        if (city != null) 'location': city,
         'limit': limit.toString(),
+        'offset': ((page - 1) * limit).toString(),
       };
 }
 
@@ -71,19 +73,28 @@ class CarRepository {
     return Car.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<Car> createCar(CarCreateDto dto) async {
+  Future<Car> createCar(CarCreateDto dto, List<String> uploadedUrls) async {
     if (dto.imagePaths.length > AppConstants.maxCarImages) {
       throw ArgumentError('En fazla ${AppConstants.maxCarImages} fotoğraf yüklenebilir.');
     }
-    // Dio, FormData gönderiminde Content-Type'ı otomatik multipart/form-data yapar
-    final formData = await dto.toFormData();
-    final response = await _apiClient.dio.post(ApiEndpoints.cars, data: formData);
+    final response = await _apiClient.dio.post(
+      ApiEndpoints.cars, 
+      data: dto.toJson(uploadedUrls)
+    );
     return Car.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<Car> updateCar(String carId, Map<String, dynamic> fields) async {
     final response = await _apiClient.dio.put(ApiEndpoints.car(carId), data: fields);
     return Car.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<String> uploadImage(String imagePath) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(imagePath),
+    });
+    final response = await _apiClient.dio.post('/api/upload/image', data: formData);
+    return response.data['url'] as String;
   }
 
   Future<void> deleteCar(String carId) async {

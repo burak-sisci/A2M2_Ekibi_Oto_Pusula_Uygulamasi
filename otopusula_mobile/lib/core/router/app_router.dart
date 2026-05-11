@@ -10,7 +10,7 @@ class AppRoutes {
 
   // İlanlar
   static const carDetail = '/cars/:id';
-  static const carCreate = '/cars/new';
+  static const carCreate = '/car-create';
   static const pricePredict = '/cars/predict';
   static const carComments = '/cars/:id/comments';
 
@@ -26,4 +26,8 @@ class AppRoutes {
   // Profil
   static const profile = '/profile';
   static const editProfile = '/profile/edit';
+
+  // Auth - Şifre Sıfırlama
+  static const forgotPassword = '/forgot-password';
+  static const resetPassword = '/reset-password';
 }

@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/network/exceptions.dart';
 import '../../data/models/car.dart';
 import '../../data/repositories/car_repository.dart';
 import '../base_view_model.dart';
@@ -32,8 +34,17 @@ class CarListViewModel extends BaseViewModel {
       _cars.addAll(result);
       _hasMore = result.length == AppConstants.defaultPageSize;
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
@@ -71,9 +82,11 @@ class CarListViewModel extends BaseViewModel {
 
   Future<void> applyFilter(CarFilterParams filter) => load(filter);
 
-  String _friendlyMessage(Exception e) {
-    final msg = e.toString().toLowerCase();
-    if (msg.contains('network') || msg.contains('connection')) return AppStrings.errorNetwork;
-    return AppStrings.errorGeneric;
+  String _friendlyApiMessage(ApiException e) {
+    return switch (e) {
+      NetworkException() => AppStrings.errorNetwork,
+      ServerException() => 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+      _ => e.message,
+    };
   }
 }

@@ -109,6 +109,12 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: AppConstants.space16),
                   Center(
                     child: TextButton(
+                      onPressed: () => context.push(AppRoutes.forgotPassword),
+                      child: const Text('Şifremi Unuttum'),
+                    ),
+                  ),
+                  Center(
+                    child: TextButton(
                       onPressed: () => context.go(AppRoutes.register),
                       child: const Text(AppStrings.noAccount),
                     ),

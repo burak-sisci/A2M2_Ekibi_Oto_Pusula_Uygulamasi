@@ -1,10 +1,14 @@
-// PUT /auth/profile — sadece telefon güncelleniyor (developer.md + AuthController)
+// PUT /users/{userId} — Ad, Telefon ve YeniSifre güncellenebilir
 class UserUpdateDto {
-  final String? phone;
+  final String? ad;
+  final String? telefon;
+  final String? yeniSifre;
 
-  const UserUpdateDto({this.phone});
+  const UserUpdateDto({this.ad, this.telefon, this.yeniSifre});
 
   Map<String, dynamic> toJson() => {
-        if (phone != null) 'Phone': phone,
+        if (ad != null) 'Ad': ad,
+        if (telefon != null) 'Telefon': telefon,
+        if (yeniSifre != null) 'YeniSifre': yeniSifre,
       };
 }

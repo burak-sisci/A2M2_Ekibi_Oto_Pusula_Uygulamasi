@@ -12,4 +12,5 @@ public interface IUserRepository
     Task<User?> GetByResetTokenAsync(string token);
     Task<bool> UpdateAsync(string id, User user);
     Task<bool> DeleteAsync(string id);
+    Task<User?> GetByPhoneAsync(string phone);
 }

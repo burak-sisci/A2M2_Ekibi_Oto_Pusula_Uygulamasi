@@ -1,5 +1,6 @@
-using backend.API.Modules.Comments.Application;
 using backend.API.Modules.Comments.Domain;
+using backend.API.Shared.Events;
+using backend.API.Shared.Messaging;
 using backend.API.Shared.Paginition;
 
 namespace backend.API.Modules.Comments.Application;
@@ -13,8 +14,8 @@ public class GetCarCommentsQuery
         _commentRepository = commentRepository;
     }
 
-    public Task<PagedResult<Comment>> ExecuteAsync(string carId, PaginationParameters pagination)
-         => _commentRepository.GetByCarIdAsync(carId, pagination);
+    public Task<PagedResult<Comment>> ExecuteAsync(string carId, PaginationParameters sayfalama)
+        => _commentRepository.GetByCarIdAsync(carId, sayfalama);
 }
 
 public class GetCommentQuery
@@ -26,31 +27,39 @@ public class GetCommentQuery
         _commentRepository = commentRepository;
     }
 
-    public async Task<Comment> ExecuteAsync(string id)
-         => await _commentRepository.GetByCommentIdAsync(id);
+    public async Task<Comment?> ExecuteAsync(string id)
+        => await _commentRepository.GetByCommentIdAsync(id);
 }
 
 public class AddCommentCommand
 {
     private readonly ICommentRepository _commentRepository;
+    private readonly IRabbitMqPublisher _publisher;
 
-    public AddCommentCommand(ICommentRepository commentRepository)
+    public AddCommentCommand(ICommentRepository commentRepository, IRabbitMqPublisher publisher)
     {
         _commentRepository = commentRepository;
+        _publisher         = publisher;
     }
 
-    public async Task<Comment> ExecuteAsync(AddCommentRequest request, string userId)
+    public async Task<Comment> ExecuteAsync(AddCommentRequest istek, string userId)
     {
-        var comment = new Comment
+        var yorum = new Comment
         {
-            UserId = userId,
-            CarId = request.CarId,
-            Content = request.Content
+            UserId  = userId,
+            CarId   = istek.CarId,
+            Content = istek.Content
         };
-        await _commentRepository.CreateAsync(comment);
-        return comment;
-    }
 
+        await _commentRepository.CreateAsync(yorum);
+
+        // RabbitMQ: Mehmet Uludağ — yorum oluşturma event'i
+        await _publisher.PublishAsync(
+            new CommentCreatedEvent(yorum.Id!, yorum.CarId!, userId, DateTime.UtcNow),
+            RabbitMqQueues.YorumOlusturuldu);
+
+        return yorum;
+    }
 }
 
 public class UpdateCommentCommand
@@ -62,22 +71,19 @@ public class UpdateCommentCommand
         _commentRepository = commentRepository;
     }
 
-    public async Task<Comment> ExecuteAsync(UpdateCommentRequest request, string userId)
+    public async Task<Comment> ExecuteAsync(UpdateCommentRequest istek, string userId)
     {
-        var existingComment = await _commentRepository.GetByCommentIdAsync(request.Id);
-        if (existingComment == null)
-        {
-            throw new KeyNotFoundException($"Yorumun ID {request.Id} bulunamadı");
-        }
+        var mevcut = await _commentRepository.GetByCommentIdAsync(istek.Id)
+            ?? throw new KeyNotFoundException($"Yorum bulunamadı: {istek.Id}");
 
-        if (existingComment.UserId != userId)
-        {
+        if (mevcut.UserId != userId)
             throw new UnauthorizedAccessException("Bu yorumu düzenleme yetkiniz yok.");
-        }
 
-        existingComment.Content = request.Content;
-        await _commentRepository.UpdateAsync(existingComment);
-        return existingComment;
+        mevcut.Content   = istek.Content;
+        mevcut.UpdatedAt = DateTime.UtcNow;
+
+        await _commentRepository.UpdateAsync(mevcut);
+        return mevcut;
     }
 }
 
@@ -90,24 +96,70 @@ public class DeleteCommentCommand
         _commentRepository = commentRepository;
     }
 
-    public async Task<bool> ExecuteAsync(DeleteCommentRequest request)
+    public async Task<bool> ExecuteAsync(DeleteCommentRequest istek)
     {
-        var comment = await _commentRepository.GetByCommentIdAsync(request.Id);
-        if (comment == null)
-        {
-            throw new KeyNotFoundException($"Yorumun ID {request.Id} bulunamadı");
-        }
-        if (comment.UserId != request.UserId)
-        {
+        var yorum = await _commentRepository.GetByCommentIdAsync(istek.Id)
+            ?? throw new KeyNotFoundException($"Yorum bulunamadı: {istek.Id}");
+
+        if (yorum.UserId != istek.UserId)
             throw new UnauthorizedAccessException("Bu yorumu silme yetkiniz yok.");
-        }
-        await _commentRepository.DeleteAsync(request.Id);
-        return true;
+
+        return await _commentRepository.DeleteAsync(istek.Id);
+    }
+}
+
+public class LikeCommentCommand
+{
+    private readonly ICommentRepository _commentRepository;
+
+    public LikeCommentCommand(ICommentRepository commentRepository)
+    {
+        _commentRepository = commentRepository;
     }
 
+    public async Task<LikeSonuc> ExecuteAsync(string commentId, string userId)
+    {
+        var yorum = await _commentRepository.GetByCommentIdAsync(commentId)
+            ?? throw new KeyNotFoundException("Yorum bulunamadı.");
 
+        if (yorum.UserId == userId)
+            throw new InvalidOperationException("Kendi yorumunuzu beğenemezsiniz.");
+
+        if (yorum.LikedByUsers.Contains(userId))
+            throw new InvalidOperationException("Bu yorum zaten beğenilmiş.");
+
+        await _commentRepository.LikeAsync(commentId, userId);
+        var guncellenmis = await _commentRepository.GetByCommentIdAsync(commentId);
+
+        return new LikeSonuc(commentId, guncellenmis!.LikeCount, true);
+    }
+}
+
+public class UnlikeCommentCommand
+{
+    private readonly ICommentRepository _commentRepository;
+
+    public UnlikeCommentCommand(ICommentRepository commentRepository)
+    {
+        _commentRepository = commentRepository;
+    }
+
+    public async Task<LikeSonuc> ExecuteAsync(string commentId, string userId)
+    {
+        var yorum = await _commentRepository.GetByCommentIdAsync(commentId)
+            ?? throw new KeyNotFoundException("Yorum bulunamadı.");
+
+        if (!yorum.LikedByUsers.Contains(userId))
+            throw new InvalidOperationException("Bu yorum zaten beğenilmemiş.");
+
+        await _commentRepository.UnlikeAsync(commentId, userId);
+        var guncellenmis = await _commentRepository.GetByCommentIdAsync(commentId);
+
+        return new LikeSonuc(commentId, guncellenmis!.LikeCount, false);
+    }
 }
 
 public record AddCommentRequest(string CarId, string Content);
 public record UpdateCommentRequest(string Content, string Id);
-public record DeleteCommentRequest(string Id,string UserId);
+public record DeleteCommentRequest(string Id, string UserId);
+public record LikeSonuc(string YorumId, int BegeniSayisi, bool BegendimMi);

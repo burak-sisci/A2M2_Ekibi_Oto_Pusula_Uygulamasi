@@ -2,6 +2,7 @@ import '../../core/network/api_client.dart';
 import '../../core/constants/api_endpoints.dart';
 import '../dto/list_create_dto.dart';
 import '../dto/list_update_dto.dart';
+import '../models/car.dart';
 import '../models/list_model.dart';
 
 class ListRepository {
@@ -17,9 +18,21 @@ class ListRepository {
     return UserList.fromJson(response.data as Map<String, dynamic>);
   }
 
+  // GET /lists/{listId} — ilanlar: [ids] döner; her ilan ayrıca fetch edilir
   Future<UserList> getList(String listId) async {
     final response = await _apiClient.dio.get(ApiEndpoints.list(listId));
-    return UserList.fromJson(response.data as Map<String, dynamic>);
+    final partial = UserList.fromJson(response.data as Map<String, dynamic>);
+
+    if (partial.carIds.isEmpty) return partial;
+
+    final cars = await Future.wait(
+      partial.carIds.map((carId) async {
+        final carResponse = await _apiClient.dio.get(ApiEndpoints.car(carId));
+        return Car.fromJson(carResponse.data as Map<String, dynamic>);
+      }),
+    );
+
+    return partial.copyWith(cars: cars);
   }
 
   Future<UserList> updateList(String listId, ListUpdateDto dto) async {
@@ -34,10 +47,11 @@ class ListRepository {
     await _apiClient.dio.delete(ApiEndpoints.list(listId));
   }
 
+  // POST /lists/{listId}/cars — backend IlanId bekler
   Future<void> addCarToList(String listId, String carId) async {
     await _apiClient.dio.post(
       ApiEndpoints.listCars(listId),
-      data: {'carId': carId},
+      data: {'IlanId': carId},
     );
   }
 

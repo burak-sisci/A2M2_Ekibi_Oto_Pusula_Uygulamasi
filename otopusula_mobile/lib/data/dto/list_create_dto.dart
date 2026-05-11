@@ -3,5 +3,5 @@ class ListCreateDto {
 
   const ListCreateDto({required this.name});
 
-  Map<String, dynamic> toJson() => {'name': name};
+  Map<String, dynamic> toJson() => {'listeAdi': name};
 }

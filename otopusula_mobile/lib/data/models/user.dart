@@ -5,8 +5,9 @@ class User {
   final String phone;
   final String? gender;
   final String? birthDate;
+  final int listingCount;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   const User({
     required this.id,
@@ -15,30 +16,40 @@ class User {
     required this.phone,
     this.gender,
     this.birthDate,
+    this.listingCount = 0,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
   });
 
+  // Backend: GET /users/{id} → {id, ad, email, telefon, cinsiyet, dogumTarihi, kayitTarihi}
+  // Backend: PUT /users/{id} → {id, ad, email, telefon}
   factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['_id'] as String,
-        name: json['name'] as String? ?? '',
-        email: json['email'] as String,
-        phone: json['phone'] as String? ?? '',
-        gender: json['gender'] as String?,
-        birthDate: json['birthDate'] as String?,
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        updatedAt: DateTime.parse(json['updatedAt'] as String),
+        id: json['id'] as String? ?? json['kullaniciId'] as String? ?? '',
+        name: json['ad'] as String? ?? '',
+        email: json['email'] as String? ?? '',
+        phone: json['phone'] as String? ?? json['telefon'] as String? ?? '',
+        gender: json['cinsiyet'] as String?,
+        birthDate: json['dogumTarihi'] as String?,
+        listingCount: (json['ilanSayisi'] as num?)?.toInt() ?? 0,
+        createdAt: json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'] as String)
+            : json['olusturulmaTarihi'] != null
+                ? DateTime.parse(json['olusturulmaTarihi'] as String)
+                : DateTime.now(),
+        updatedAt: json['updatedAt'] != null
+            ? DateTime.parse(json['updatedAt'] as String)
+            : null,
       );
 
   Map<String, dynamic> toJson() => {
-        '_id': id,
-        'name': name,
+        'id': id,
+        'ad': name,
         'email': email,
-        'phone': phone,
-        if (gender != null) 'gender': gender,
-        if (birthDate != null) 'birthDate': birthDate,
-        'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt.toIso8601String(),
+        'telefon': phone,
+        if (gender != null) 'cinsiyet': gender,
+        if (birthDate != null) 'dogumTarihi': birthDate,
+        'kayitTarihi': createdAt.toIso8601String(),
+        if (updatedAt != null) 'guncelleme': updatedAt!.toIso8601String(),
       };
 
   User copyWith({
@@ -48,6 +59,7 @@ class User {
     String? phone,
     String? gender,
     String? birthDate,
+    int? listingCount,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) =>
@@ -58,6 +70,7 @@ class User {
         phone: phone ?? this.phone,
         gender: gender ?? this.gender,
         birthDate: birthDate ?? this.birthDate,
+        listingCount: listingCount ?? this.listingCount,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );

@@ -35,7 +35,7 @@ class ListCard extends StatelessWidget {
                     Text(userList.name, style: AppTextStyles.h3),
                     const SizedBox(height: AppConstants.space4),
                     Text(
-                      '${userList.cars.length} ilan',
+                      '${userList.totalCars} ilan',
                       style: AppTextStyles.small,
                     ),
                   ],

@@ -191,6 +191,9 @@ public class Car
     [BsonElement("location")]
     public string Konum { get; set; } = string.Empty;                      // Konum
 
+    [BsonElement("description")]
+    public string Aciklama { get; set; } = string.Empty;                   // Açıklama
+
     [BsonElement("ownerId")]
     public string IlanSahibi { get; set; } = string.Empty;                       // İlan Sahibi
 

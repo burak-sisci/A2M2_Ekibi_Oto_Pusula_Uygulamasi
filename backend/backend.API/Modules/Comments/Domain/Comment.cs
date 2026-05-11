@@ -7,17 +7,26 @@ public class Comment
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
-    public string? Id {get;set;}=ObjectId.GenerateNewId().ToString();
+    public string? Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
-    [BsonElement("userId")]
-    public string? UserId {get;set;}
+    [BsonElement("kullaniciId")]
+    public string? UserId { get; set; }
 
-    [BsonElement("carId")]
-    public string? CarId {get;set;}
+    [BsonElement("ilanId")]
+    public string? CarId { get; set; }
 
-    [BsonElement("content")]
+    [BsonElement("icerik")]
     public string? Content { get; set; }
 
-    [BsonElement("createdAt")]
-    public DateTime CreatedAt { get; set; }=DateTime.UtcNow;
+    [BsonElement("begeniSayisi")]
+    public int LikeCount { get; set; } = 0;
+
+    [BsonElement("begenenKullanicilar")]
+    public List<string> LikedByUsers { get; set; } = [];
+
+    [BsonElement("olusturulmaTarihi")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [BsonElement("guncellemeTarihi")]
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

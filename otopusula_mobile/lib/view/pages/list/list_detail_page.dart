@@ -39,6 +39,16 @@ class _ListDetailView extends StatelessWidget {
       builder: (ctx, vm, __) => Scaffold(
         appBar: AppBar(
           title: Text(vm.userList?.name ?? ''),
+          actions: [
+            if (vm.userList != null && !vm.userList!.isDefault)
+              Semantics(
+                label: 'Listeyi Yeniden Adlandır',
+                child: IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () => _showRenameDialog(ctx, vm),
+                ),
+              ),
+          ],
         ),
         body: _buildBody(ctx, vm),
       ),
@@ -64,6 +74,7 @@ class _ListDetailView extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: vm.load,
           child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(AppConstants.space16),
             itemCount: cars.length,
             separatorBuilder: (_, __) =>
@@ -95,6 +106,39 @@ class _ListDetailView extends StatelessWidget {
             },
           ),
         );
+    }
+  }
+
+  Future<void> _showRenameDialog(
+    BuildContext context,
+    ListDetailViewModel vm,
+  ) async {
+    final controller = TextEditingController(text: vm.userList?.name ?? '');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Listeyi Yeniden Adlandır'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Yeni liste adı'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: const Text(AppStrings.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: const Text(AppStrings.save),
+          ),
+        ],
+      ),
+    );
+    final newName = controller.text.trim();
+    controller.dispose();
+    if (confirmed == true && newName.isNotEmpty) {
+      vm.rename(newName);
     }
   }
 }

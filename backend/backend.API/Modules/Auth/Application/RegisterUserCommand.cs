@@ -1,6 +1,8 @@
 using backend.API.Modules.Auth.Domain;
 using backend.API.Modules.Lists.Application;
 using backend.API.Shared.Database;
+using backend.API.Shared.Events;
+using backend.API.Shared.Messaging;
 using backend.API.Shared.Security;
 
 namespace backend.API.Modules.Auth.Application;
@@ -12,19 +14,22 @@ public class RegisterUserCommand
     private readonly IListRepository _listRepository;
     private readonly MongoTransactionManager _transactionManager;
     private readonly JwtTokenGenerator _jwtTokenGenerator;
+    private readonly IRabbitMqPublisher _publisher;
 
     public RegisterUserCommand(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IListRepository listRepository,
         MongoTransactionManager transactionManager,
-        JwtTokenGenerator jwtTokenGenerator)
+        JwtTokenGenerator jwtTokenGenerator,
+        IRabbitMqPublisher publisher)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _listRepository = listRepository;
         _transactionManager = transactionManager;
         _jwtTokenGenerator = jwtTokenGenerator;
+        _publisher = publisher;
     }
 
     public async Task<RegisterResult> ExecuteAsync(RegisterRequest request)
@@ -37,9 +42,12 @@ public class RegisterUserCommand
 
         var user = new User
         {
-            Email = request.Email,
-            Phone = request.Phone,
-            PasswordHash = _passwordHasher.Hash(request.Password)
+            Ad           = request.Ad,
+            Email        = request.Email,
+            Phone        = request.Phone,
+            PasswordHash = _passwordHasher.Hash(request.Sifre),
+            Cinsiyet     = request.Cinsiyet,
+            DogumTarihi  = request.DogumTarihi
         };
 
         await _transactionManager.ExecuteInTransactionAsync(async session =>
@@ -48,11 +56,23 @@ public class RegisterUserCommand
             await _listRepository.CreateDefaultListAsync(user.Id, session);
         });
 
+        // RabbitMQ: Burak Şişci — kullanıcı kaydı event'i
+        await _publisher.PublishAsync(
+            new UserRegisteredEvent(user.Id, user.Email, user.Ad, DateTime.UtcNow),
+            RabbitMqQueues.KullaniciKayit);
+
         var token = _jwtTokenGenerator.GenerateToken(user.Id, user.Email);
 
-        return new RegisterResult(user.Id, user.Email, token);
+        return new RegisterResult(user.Id, user.Email, user.Ad, token);
     }
 }
 
-public record RegisterRequest(string Email, string Phone, string Password);
-public record RegisterResult(string UserId, string Email, string Token);
+public record RegisterRequest(
+    string Ad,
+    string Email,
+    string Phone,
+    string Sifre,
+    Cinsiyet? Cinsiyet = null,
+    DateTime? DogumTarihi = null);
+
+public record RegisterResult(string KullaniciId, string Email, string Ad, string Token);

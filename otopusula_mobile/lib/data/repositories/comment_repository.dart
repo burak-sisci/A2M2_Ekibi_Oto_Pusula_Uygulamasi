@@ -18,7 +18,7 @@ class CommentRepository {
   }) async {
     final response = await _apiClient.dio.get(
       ApiEndpoints.carComments(carId),
-      queryParameters: {'page': page, 'limit': limit},
+      queryParameters: {'limit': limit, 'offset': (page - 1) * limit},
     );
     final data = response.data;
     final List<dynamic> items =
@@ -51,15 +51,15 @@ class CommentRepository {
     return ShareLink.fromJson(response.data as Map<String, dynamic>);
   }
 
-  // TODO: Backend'de henüz implement edilmedi.
-  // Endpoint eklenince: POST /comments/:commentId/like
-  Future<void> likeComment(String commentId) async {
-    await _apiClient.dio.post(ApiEndpoints.commentLike(commentId));
+  // POST /comments/{commentId}/like → {yorumId, begeniSayisi, begendimMi}
+  Future<Map<String, dynamic>> likeComment(String commentId) async {
+    final response = await _apiClient.dio.post(ApiEndpoints.commentLike(commentId));
+    return response.data as Map<String, dynamic>;
   }
 
-  // TODO: Backend'de henüz implement edilmedi.
-  // Endpoint eklenince: DELETE /comments/:commentId/like
-  Future<void> unlikeComment(String commentId) async {
-    await _apiClient.dio.delete(ApiEndpoints.commentLike(commentId));
+  // DELETE /comments/{commentId}/like → {yorumId, begeniSayisi, begendimMi}
+  Future<Map<String, dynamic>> unlikeComment(String commentId) async {
+    final response = await _apiClient.dio.delete(ApiEndpoints.commentLike(commentId));
+    return response.data as Map<String, dynamic>;
   }
 }

@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/network/exceptions.dart';
 import '../../data/dto/comment_add_dto.dart';
 import '../../data/dto/comment_update_dto.dart';
 import '../../data/models/comment.dart';
@@ -14,15 +16,22 @@ class CarCommentsViewModel extends BaseViewModel {
   int _currentPage = 1;
   bool _hasMore = true;
   bool _isFetchingMore = false;
+  String? _operationError;
 
   List<Comment> get comments => List.unmodifiable(_comments);
   bool get hasMore => _hasMore;
   bool get isFetchingMore => _isFetchingMore;
+  // Beğeni/güncelleme gibi ikincil işlemlerde snackbar için kullanılır
+  String? get operationError => _operationError;
 
   CarCommentsViewModel({
     required CommentRepository commentRepository,
     required this.carId,
   }) : _commentRepository = commentRepository;
+
+  void clearOperationError() {
+    _operationError = null;
+  }
 
   Future<void> load() async {
     _currentPage = 1;
@@ -34,8 +43,17 @@ class CarCommentsViewModel extends BaseViewModel {
       _comments.addAll(result);
       _hasMore = result.length == AppConstants.defaultPageSize;
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
@@ -67,8 +85,17 @@ class CarCommentsViewModel extends BaseViewModel {
       );
       _comments.insert(0, comment);
       notifyListeners();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
@@ -83,8 +110,18 @@ class CarCommentsViewModel extends BaseViewModel {
         _comments[idx] = updated;
         notifyListeners();
       }
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      _operationError = apiError is ApiException
+          ? _friendlyApiMessage(apiError)
+          : AppStrings.errorGeneric;
+      notifyListeners();
+    } on ApiException catch (e) {
+      _operationError = _friendlyApiMessage(e);
+      notifyListeners();
+    } on Exception catch (_) {
+      _operationError = AppStrings.errorNetwork;
+      notifyListeners();
     }
   }
 
@@ -93,30 +130,87 @@ class CarCommentsViewModel extends BaseViewModel {
       await _commentRepository.deleteComment(commentId);
       _comments.removeWhere((c) => c.id == commentId);
       notifyListeners();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
-    }
-  }
-
-  // TODO: Backend endpoint bekliyor — likeComment / unlikeComment (developer.md §5 tablosu)
-  Future<void> likeComment(String commentId) async {
-    try {
-      await _commentRepository.likeComment(commentId);
+    } on DioException catch (e) {
+      final apiError = e.error;
+      _operationError = apiError is ApiException
+          ? _friendlyApiMessage(apiError)
+          : AppStrings.errorGeneric;
+      notifyListeners();
+    } on ApiException catch (e) {
+      _operationError = _friendlyApiMessage(e);
+      notifyListeners();
     } on Exception catch (_) {
-      // Hata sessizce yutulur; backend hazır olunca state yönetimi eklenecek
+      _operationError = AppStrings.errorNetwork;
+      notifyListeners();
     }
   }
 
-  Future<void> unlikeComment(String commentId) async {
+  // POST /comments/{id}/like — likedByUsers optimistik güncellenir
+  Future<void> likeComment(String commentId, String? currentUserId) async {
     try {
-      await _commentRepository.unlikeComment(commentId);
-    } on Exception catch (_) {}
+      final result = await _commentRepository.likeComment(commentId);
+      final likeCount = result['begeniSayisi'] as int? ?? 0;
+      final idx = _comments.indexWhere((c) => c.id == commentId);
+      if (idx != -1) {
+        final updatedUsers = currentUserId != null &&
+                !_comments[idx].likedByUsers.contains(currentUserId)
+            ? [..._comments[idx].likedByUsers, currentUserId]
+            : _comments[idx].likedByUsers;
+        _comments[idx] = _comments[idx].copyWith(
+          likeCount: likeCount,
+          likedByUsers: updatedUsers,
+        );
+        notifyListeners();
+      }
+    } on DioException catch (e) {
+      final apiError = e.error;
+      _operationError = apiError is ApiException
+          ? _friendlyApiMessage(apiError)
+          : AppStrings.errorGeneric;
+      notifyListeners();
+    } on Exception catch (_) {
+      _operationError = 'Beğeni işlemi başarısız.';
+      notifyListeners();
+    }
   }
 
-  String _friendlyMessage(Exception e) {
-    final msg = e.toString().toLowerCase();
-    if (msg.contains('network') || msg.contains('connection')) return AppStrings.errorNetwork;
-    if (msg.contains('403')) return AppStrings.errorForbidden;
-    return AppStrings.errorGeneric;
+  // DELETE /comments/{id}/like — likedByUsers optimistik güncellenir
+  Future<void> unlikeComment(String commentId, String? currentUserId) async {
+    try {
+      final result = await _commentRepository.unlikeComment(commentId);
+      final likeCount = result['begeniSayisi'] as int? ?? 0;
+      final idx = _comments.indexWhere((c) => c.id == commentId);
+      if (idx != -1) {
+        final updatedUsers = currentUserId != null
+            ? _comments[idx]
+                .likedByUsers
+                .where((id) => id != currentUserId)
+                .toList()
+            : _comments[idx].likedByUsers;
+        _comments[idx] = _comments[idx].copyWith(
+          likeCount: likeCount,
+          likedByUsers: updatedUsers,
+        );
+        notifyListeners();
+      }
+    } on DioException catch (e) {
+      final apiError = e.error;
+      _operationError = apiError is ApiException
+          ? _friendlyApiMessage(apiError)
+          : AppStrings.errorGeneric;
+      notifyListeners();
+    } on Exception catch (_) {
+      _operationError = 'Beğeni geri alma başarısız.';
+      notifyListeners();
+    }
+  }
+
+  String _friendlyApiMessage(ApiException e) {
+    return switch (e) {
+      ForbiddenException() => AppStrings.errorForbidden,
+      NetworkException() => AppStrings.errorNetwork,
+      ServerException() => 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+      _ => e.message,
+    };
   }
 }

@@ -42,6 +42,7 @@ class _ProfileView extends StatelessWidget {
       builder: (ctx, vm, __) {
         if (vm.deleteSuccess) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            vm.resetDeleteSuccess();
             context.read<AuthSessionViewModel>().logout();
           });
         }
@@ -53,7 +54,12 @@ class _ProfileView extends StatelessWidget {
                 label: 'Profili Düzenle',
                 child: IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => context.push(AppRoutes.editProfile),
+                  onPressed: () async {
+                    await context.push(AppRoutes.editProfile);
+                    if (context.mounted) {
+                      context.read<ProfileViewModel>().load();
+                    }
+                  },
                 ),
               ),
             ],
@@ -92,7 +98,31 @@ class _ProfileView extends StatelessWidget {
             Center(
               child: Text(user.name, style: AppTextStyles.h2),
             ),
-            const SizedBox(height: AppConstants.space32),
+            const SizedBox(height: AppConstants.space16),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.space16, vertical: AppConstants.space8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusPill),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.directions_car_outlined,
+                        size: 16, color: AppColors.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${user.listingCount} İlan',
+                      style: AppTextStyles.small
+                          .copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: AppConstants.space16),
             _InfoTile(icon: Icons.email_outlined, label: 'E-posta', value: user.email),
             const Divider(),
             _InfoTile(

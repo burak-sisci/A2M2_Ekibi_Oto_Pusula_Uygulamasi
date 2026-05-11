@@ -1,11 +1,11 @@
 import 'package:mocktail/mocktail.dart';
-import '../../lib/data/repositories/ai_repository.dart';
-import '../../lib/data/repositories/auth_repository.dart';
-import '../../lib/data/repositories/car_repository.dart';
-import '../../lib/data/repositories/comment_repository.dart';
-import '../../lib/data/repositories/list_repository.dart';
-import '../../lib/data/repositories/user_repository.dart';
-import '../../lib/core/storage/token_storage.dart';
+import 'package:otopusula_mobile/data/repositories/ai_repository.dart';
+import 'package:otopusula_mobile/data/repositories/auth_repository.dart';
+import 'package:otopusula_mobile/data/repositories/car_repository.dart';
+import 'package:otopusula_mobile/data/repositories/comment_repository.dart';
+import 'package:otopusula_mobile/data/repositories/list_repository.dart';
+import 'package:otopusula_mobile/data/repositories/user_repository.dart';
+import 'package:otopusula_mobile/core/storage/token_storage.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 class MockUserRepository extends Mock implements UserRepository {}

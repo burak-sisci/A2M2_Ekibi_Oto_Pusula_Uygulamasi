@@ -77,6 +77,7 @@ class _ListsView extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: vm.load,
           child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(AppConstants.space16),
             itemCount: vm.lists.length,
             separatorBuilder: (_, __) =>
@@ -103,7 +104,7 @@ class _ListsView extends StatelessWidget {
     final controller = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: const Text(AppStrings.listCreateTitle),
         content: TextField(
           controller: controller,
@@ -113,11 +114,11 @@ class _ListsView extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
             child: const Text(AppStrings.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
             child: const Text(AppStrings.save),
           ),
         ],

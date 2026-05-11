@@ -17,8 +17,10 @@ import 'data/repositories/user_repository.dart';
 
 import 'viewmodels/auth/auth_session_view_model.dart';
 
+import 'view/pages/auth/forgot_password_page.dart';
 import 'view/pages/auth/login_page.dart';
 import 'view/pages/auth/register_page.dart';
+import 'view/pages/auth/reset_password_page.dart';
 import 'view/pages/car/car_create_page.dart';
 import 'view/pages/car/car_detail_page.dart';
 import 'view/pages/car/car_list_page.dart';
@@ -79,13 +81,22 @@ class _AppState extends State<App> {
 
         if (status == AuthStatus.initializing) return AppRoutes.splash;
 
-        const publicRoutes = [AppRoutes.splash, AppRoutes.login, AppRoutes.register];
-        if (status == AuthStatus.unauthenticated && !publicRoutes.contains(path)) {
+        if (status == AuthStatus.unauthenticated) {
+          if (path == AppRoutes.login ||
+              path == AppRoutes.register ||
+              path == AppRoutes.forgotPassword ||
+              path == AppRoutes.resetPassword) {
+            return null;
+          }
           return AppRoutes.login;
         }
-        if (status == AuthStatus.authenticated &&
-            (path == AppRoutes.login || path == AppRoutes.register)) {
-          return AppRoutes.home;
+
+        if (status == AuthStatus.authenticated) {
+          if (path == AppRoutes.splash ||
+              path == AppRoutes.login ||
+              path == AppRoutes.register) {
+            return AppRoutes.home;
+          }
         }
         return null;
       },
@@ -113,16 +124,17 @@ class _AppState extends State<App> {
           ],
         ),
         GoRoute(
-          path: AppRoutes.carDetail,
-          builder: (_, state) => CarDetailPage(carId: state.pathParameters['id']!),
-        ),
-        GoRoute(
           path: AppRoutes.carCreate,
           builder: (_, __) => const CarCreatePage(),
         ),
+        // Spesifik rotalar (:id parametreli rotadan önce tanımlanmalı
         GoRoute(
           path: AppRoutes.pricePredict,
           builder: (_, __) => const PricePredictPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.carDetail,
+          builder: (_, state) => CarDetailPage(carId: state.pathParameters['id']!),
         ),
         GoRoute(
           path: AppRoutes.carComments,
@@ -143,6 +155,16 @@ class _AppState extends State<App> {
         GoRoute(
           path: AppRoutes.editProfile,
           builder: (_, __) => const EditProfilePage(),
+        ),
+        GoRoute(
+          path: AppRoutes.forgotPassword,
+          builder: (_, __) => const ForgotPasswordPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.resetPassword,
+          builder: (_, state) => ResetPasswordPage(
+            initialToken: state.uri.queryParameters['token'],
+          ),
         ),
       ],
     );

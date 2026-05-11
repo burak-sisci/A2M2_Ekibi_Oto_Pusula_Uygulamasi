@@ -18,114 +18,77 @@ public class AuthController : ControllerBase
     public AuthController(
         RegisterUserCommand registerCommand,
         LoginUserCommand loginCommand,
-        LogoutUserCommand logoutCommand,IMediator mediator)
+        LogoutUserCommand logoutCommand,
+        IMediator mediator)
     {
         _registerCommand = registerCommand;
-        _loginCommand = loginCommand;
-        _logoutCommand = logoutCommand;
-        _mediator = mediator;
+        _loginCommand    = loginCommand;
+        _logoutCommand   = logoutCommand;
+        _mediator        = mediator;
     }
 
-    public record UpdateProfileRequestDto(string? Phone);
-
-    /// <summary>Yeni kullanıcı kaydı</summary>
+    /// <summary>POST /auth/register — Yeni kullanıcı kaydı</summary>
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest istek)
     {
-        var result = await _registerCommand.ExecuteAsync(request);
-        return StatusCode(201, result);
+        var sonuc = await _registerCommand.ExecuteAsync(istek);
+        return StatusCode(201, sonuc);
     }
 
-    /// <summary>Kullanıcı girişi</summary>
+    /// <summary>POST /auth/login — Kullanıcı girişi (email veya telefon)</summary>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest istek)
     {
-        var result = await _loginCommand.ExecuteAsync(request);
-        return Ok(result);
+        var sonuc = await _loginCommand.ExecuteAsync(istek);
+        return Ok(sonuc);
     }
 
-    /// <summary>Şifre sıfırlama talebi oluştur (Token üretir)</summary>
-    [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, [FromServices] IUserRepository userRepository)
-    {
-        var user = await userRepository.GetByEmailAsync(request.Email);
-        if (user == null)
-            return BadRequest(new { message = "Bu e-posta adresine ait bir kullanıcı bulunamadı." });
-
-        user.ResetToken = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
-        user.ResetTokenExpires = DateTime.UtcNow.AddHours(1);
-
-        await userRepository.UpdateAsync(user.Id, user);
-
-        return Ok(new { message = "Şifre sıfırlama bağlantısı oluşturuldu.", resetToken = user.ResetToken });
-    }
-
-    /// <summary>Token ile yeni şifreyi belirle</summary>
-    [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, [FromServices] IUserRepository userRepository, [FromServices] IPasswordHasher passwordHasher)
-    {
-        var user = await userRepository.GetByResetTokenAsync(request.Token);
-        
-        if (user == null || user.ResetTokenExpires < DateTime.UtcNow)
-            return BadRequest(new { message = "Geçersiz veya süresi dolmuş token." });
-
-        user.PasswordHash = passwordHasher.Hash(request.NewPassword);
-        
-        user.ResetToken = null;
-        user.ResetTokenExpires = null;
-
-        await userRepository.UpdateAsync(user.Id, user);
-
-        return Ok(new { message = "Şifreniz başarıyla güncellendi." });
-    }
-
-     /// <summary>Kullanıcı profili güncelleme</summary>
-    [Authorize] 
-    [HttpPut("profile")]
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequestDto request)
-    {
-        
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized(new { message = "Yetkisiz işlem." });
-
-        var command = new UpdateProfileCommand(
-            userId,  
-            request.Phone
-        );
-
-        var result = await _mediator.Send(command);
-
-        if (!result)
-            return NotFound(new { message = "Kullanıcı bulunamadı." });
-
-        return Ok(new { message = "Profiliniz başarıyla güncellendi." });
-    }
-
-
-    /// <summary>Kullanıcı çıkışı - token blacklist'e eklenir</summary>
+    /// <summary>POST /auth/logout — Oturum sonlandırma</summary>
     [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
         var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
         await _logoutCommand.ExecuteAsync(token);
-        return Ok(new { message = "Başarıyla çıkış yapıldı." });
+        return Ok(new { mesaj = "Oturum başarıyla sonlandırıldı." });
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUser(string id)
+    /// <summary>POST /auth/forgot-password — Şifre sıfırlama token'ı oluştur</summary>
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordRequest istek,
+        [FromServices] IUserRepository userRepository)
     {
-        var command = new DeleteUserCommand(id);
-        var result = await _mediator.Send(command);
+        var kullanici = await userRepository.GetByEmailAsync(istek.Email);
+        if (kullanici is null)
+            return BadRequest(new { mesaj = "Bu e-posta adresine ait bir kullanıcı bulunamadı." });
 
-        if (!result)
-        {
-            return NotFound(new { Message = "Kullanıcı bulunamadı." });
-        }
+        kullanici.ResetToken        = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
+        kullanici.ResetTokenExpires = DateTime.UtcNow.AddHours(1);
 
-        return Ok(new { Message = "Kullanıcı ve ona ait tüm veriler (arabalar, yorumlar) başarıyla silindi." });
+        await userRepository.UpdateAsync(kullanici.Id, kullanici);
+
+        return Ok(new { mesaj = "Şifre sıfırlama bağlantısı oluşturuldu.", resetToken = kullanici.ResetToken });
+    }
+
+    /// <summary>POST /auth/reset-password — Yeni şifre belirleme</summary>
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequest istek,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IPasswordHasher passwordHasher)
+    {
+        var kullanici = await userRepository.GetByResetTokenAsync(istek.Token);
+
+        if (kullanici is null || kullanici.ResetTokenExpires < DateTime.UtcNow)
+            return BadRequest(new { mesaj = "Geçersiz veya süresi dolmuş token." });
+
+        kullanici.PasswordHash      = passwordHasher.Hash(istek.YeniSifre);
+        kullanici.ResetToken        = null;
+        kullanici.ResetTokenExpires = null;
+
+        await userRepository.UpdateAsync(kullanici.Id, kullanici);
+
+        return Ok(new { mesaj = "Şifreniz başarıyla güncellendi." });
     }
 }
-

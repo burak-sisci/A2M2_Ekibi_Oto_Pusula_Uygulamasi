@@ -50,6 +50,7 @@ class _CarListViewState extends State<_CarListView> {
   }
 
   void _onScroll() {
+    if (!_scroll.hasClients) return;
     final vm = context.read<CarListViewModel>();
     // 200 px kala sonraki sayfa yükle (developer.md §11)
     if (_scroll.position.extentAfter < AppConstants.paginationScrollThreshold) {
@@ -105,6 +106,7 @@ class _CarListViewState extends State<_CarListView> {
           onRefresh: () => vm.load(vm.filter),
           child: ListView.separated(
             controller: _scroll,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(AppConstants.space16),
             itemCount: vm.cars.length + (vm.isFetchingMore ? 1 : 0),
             separatorBuilder: (_, __) => const SizedBox(height: AppConstants.space12),

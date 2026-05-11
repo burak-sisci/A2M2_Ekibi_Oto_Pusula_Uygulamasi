@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/network/exceptions.dart';
 import '../../data/models/car.dart';
 import '../../data/models/share_link.dart';
 import '../../data/repositories/car_repository.dart';
@@ -18,6 +20,10 @@ class CarDetailViewModel extends BaseViewModel {
   ShareLink? get shareLink => _shareLink;
   bool get deleteSuccess => _deleteSuccess;
 
+  void resetDeleteSuccess() {
+    _deleteSuccess = false;
+  }
+
   CarDetailViewModel({
     required CarRepository carRepository,
     required CommentRepository commentRepository,
@@ -30,17 +36,37 @@ class CarDetailViewModel extends BaseViewModel {
     try {
       _car = await _carRepository.getCar(carId);
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
+  String? _shareLinkError;
+  String? get shareLinkError => _shareLinkError;
+
   Future<void> fetchShareLink() async {
+    _shareLinkError = null;
     try {
       _shareLink = await _commentRepository.getShareLink(carId);
       notifyListeners();
+    } on DioException catch (e) {
+      final apiError = e.error;
+      _shareLinkError = apiError is ApiException
+          ? _friendlyApiMessage(apiError)
+          : 'Paylaşım linki alınamadı.';
+      notifyListeners();
     } on Exception {
-      // Paylaşım linki arka planda; hata kullanıcıya iletilebilir
+      _shareLinkError = 'Paylaşım linki alınamadı.';
+      notifyListeners();
     }
   }
 
@@ -51,16 +77,27 @@ class CarDetailViewModel extends BaseViewModel {
       await _carRepository.deleteCar(carId);
       _deleteSuccess = true;
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
-  String _friendlyMessage(Exception e) {
-    final msg = e.toString().toLowerCase();
-    if (msg.contains('network') || msg.contains('connection')) return AppStrings.errorNetwork;
-    if (msg.contains('404') || msg.contains('notfound')) return AppStrings.errorNotFound;
-    if (msg.contains('403') || msg.contains('forbidden')) return AppStrings.errorForbidden;
-    return AppStrings.errorGeneric;
+  String _friendlyApiMessage(ApiException e) {
+    return switch (e) {
+      NotFoundException() => AppStrings.errorNotFound,
+      ForbiddenException() => AppStrings.errorForbidden,
+      NetworkException() => AppStrings.errorNetwork,
+      ServerException() => 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+      _ => e.message,
+    };
   }
 }

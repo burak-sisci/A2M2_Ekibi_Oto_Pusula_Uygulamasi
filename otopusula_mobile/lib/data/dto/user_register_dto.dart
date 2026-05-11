@@ -1,10 +1,11 @@
+// Backend RegisterRequest: {Ad, Email, Phone, Sifre, Cinsiyet?, DogumTarihi?}
 class UserRegisterDto {
   final String name;
   final String email;
   final String phone;
   final String password;
   final String? gender;
-  final String? birthDate; // ISO date string: "1998-05-15"
+  final String? birthDate;
 
   const UserRegisterDto({
     required this.name,
@@ -16,11 +17,11 @@ class UserRegisterDto {
   });
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'password': password,
-        if (gender != null) 'gender': gender,
-        if (birthDate != null) 'birthDate': birthDate,
+        'Ad': name,
+        'Email': email,
+        'Phone': phone,
+        'Sifre': password,
+        if (gender != null) 'Cinsiyet': gender,
+        if (birthDate != null) 'DogumTarihi': birthDate,
       };
 }

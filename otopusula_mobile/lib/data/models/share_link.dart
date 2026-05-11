@@ -10,9 +10,14 @@ class ShareLink {
   });
 
   factory ShareLink.fromJson(Map<String, dynamic> json) => ShareLink(
-        shortUrl: json['shortUrl'] as String,
-        originalUrl: json['originalUrl'] as String,
-        expiresAt: DateTime.parse(json['expiresAt'] as String),
+        // Backend returns camelCase Turkish: kisaUrl / orijinalUrl / gecerlilikSonu
+        shortUrl: (json['kisaUrl'] ?? json['shortUrl'] ?? '') as String,
+        originalUrl: (json['orijinalUrl'] ?? json['originalUrl'] ?? '') as String,
+        expiresAt: json['gecerlilikSonu'] != null
+            ? DateTime.parse(json['gecerlilikSonu'] as String)
+            : json['expiresAt'] != null
+                ? DateTime.parse(json['expiresAt'] as String)
+                : DateTime.now().add(const Duration(days: 90)),
       );
 
   Map<String, dynamic> toJson() => {

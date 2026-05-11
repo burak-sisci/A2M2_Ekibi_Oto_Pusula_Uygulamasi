@@ -5,12 +5,24 @@ enum ViewState { idle, loading, success, error }
 abstract class BaseViewModel extends ChangeNotifier {
   ViewState _state = ViewState.idle;
   String? _errorMessage;
+  bool _disposed = false;
 
   ViewState get state => _state;
   String? get errorMessage => _errorMessage;
   bool get isLoading => _state == ViewState.loading;
   bool get hasError => _state == ViewState.error;
   bool get isSuccess => _state == ViewState.success;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) super.notifyListeners();
+  }
 
   @protected
   void setState(ViewState s, {String? error}) {

@@ -9,15 +9,21 @@ public class UserList
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
-    [BsonElement("userId")]
+    [BsonElement("kullaniciId")]
     public string UserId { get; set; } = string.Empty;
 
-    [BsonElement("listName")]
+    [BsonElement("listeAdi")]
     public string ListName { get; set; } = string.Empty;
 
-    [BsonElement("items")]
+    [BsonElement("varsayilan")]
+    public bool IsDefault { get; set; } = false;
+
+    [BsonElement("ilanlar")]
     public List<string> Items { get; set; } = [];
 
-    [BsonElement("createdAt")]
+    [BsonElement("olusturulmaTarihi")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [BsonElement("guncellemeTarihi")]
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

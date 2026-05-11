@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/network/exceptions.dart';
 import '../../data/dto/user_register_dto.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../base_view_model.dart';
@@ -39,22 +41,33 @@ class RegisterViewModel extends BaseViewModel {
         ),
       );
       _token = data['token'] as String?;
-      _userId = data['_id'] as String?;
+      // Backend: {kullaniciId, email, ad, token}
+      _userId = data['kullaniciId'] as String?
+          ?? data['userId'] as String?
+          ?? data['_id'] as String?;
       _registerSuccess = true;
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
-  String _friendlyMessage(Exception e) {
-    final msg = e.toString().toLowerCase();
-    if (msg.contains('conflict') || msg.contains('409')) {
-      return 'Bu e-posta veya telefon zaten kayıtlı.';
-    }
-    if (msg.contains('network') || msg.contains('connection')) {
-      return AppStrings.errorNetwork;
-    }
-    return AppStrings.errorGeneric;
+  String _friendlyApiMessage(ApiException e) {
+    return switch (e) {
+      ConflictException() => 'Bu e-posta veya telefon zaten kayıtlı.',
+      NetworkException() => AppStrings.errorNetwork,
+      BadRequestException() => 'Girdiğiniz bilgileri kontrol edin.',
+      ServerException() => 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+      _ => e.message,
+    };
   }
 }

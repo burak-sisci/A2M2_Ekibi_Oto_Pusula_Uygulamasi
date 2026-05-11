@@ -4,97 +4,108 @@ using backend.API.Shared.Paginition;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
- 
+
 namespace backend.API.Presentation.Controllers;
- 
+
 [ApiController]
 [Route("cars")]
 public class CarsController : ControllerBase
 {
     private readonly GetCarsQuery _getCarsQuery;
+    private readonly GetCarByIdQuery _getCarByIdQuery;
     private readonly AddCarCommand _addCarCommand;
+    private readonly UpdateCarCommand _updateCarCommand;
     private readonly IMediator _mediator;
- 
-    public CarsController(GetCarsQuery getCarsQuery, IMediator mediator, AddCarCommand addCarCommand)
+
+    public CarsController(
+        GetCarsQuery getCarsQuery,
+        GetCarByIdQuery getCarByIdQuery,
+        AddCarCommand addCarCommand,
+        UpdateCarCommand updateCarCommand,
+        IMediator mediator)
     {
-        _getCarsQuery = getCarsQuery;
-        _addCarCommand = addCarCommand;
-        _mediator = mediator;
+        _getCarsQuery    = getCarsQuery;
+        _getCarByIdQuery = getCarByIdQuery;
+        _addCarCommand   = addCarCommand;
+        _updateCarCommand = updateCarCommand;
+        _mediator        = mediator;
     }
- 
-    /// <summary>Araçları listele (pagination + filtre)</summary>
+
+    /// <summary>GET /cars — İlanları filtrele ve listele (Redis cache'li)</summary>
     [HttpGet]
     public async Task<IActionResult> GetCars(
-        [FromQuery] int limit = 20,
-        [FromQuery] int offset = 0,
-        [FromQuery] string? brand = null,
-        [FromQuery] string? seri = null,
-        [FromQuery] string? images = null,
-        [FromQuery] string? model = null,
-        [FromQuery] string? location = null,
+        [FromQuery] int limit       = 20,
+        [FromQuery] int offset      = 0,
+        [FromQuery] string? brand   = null,
+        [FromQuery] string? seri    = null,
+        [FromQuery] string? images  = null,
+        [FromQuery] string? model   = null,
+        [FromQuery] string? location= null,
         [FromQuery] decimal? minPrice = null,
-        [FromQuery] decimal? maxPrice = null
-        )
+        [FromQuery] decimal? maxPrice = null)
     {
-        var pagination = new PaginationParameters { Limit = limit, Offset = offset };
-        var filter = new CarsFilter(brand, seri,images, model,location, minPrice, maxPrice);
-        var result = await _getCarsQuery.ExecuteAsync(filter, pagination);
-        return Ok(result);
+        var sayfalama = new PaginationParameters { Limit = limit, Offset = offset };
+        var filtre    = new CarsFilter(Marka: brand, Seri: seri, Model: model, Konum: location, MinFiyat: minPrice, MaxFiyat: maxPrice);
+        var sonuc     = await _getCarsQuery.ExecuteAsync(filtre, sayfalama);
+        return Ok(sonuc);
     }
- 
-    /// <summary>Yeni araç ekle (auth zorunlu)</summary>
-    //[Authorize]
+
+    /// <summary>GET /cars/{carId} — İlan detayı görüntüleme</summary>
+    [HttpGet("{carId}")]
+    public async Task<IActionResult> GetCar(string carId)
+    {
+        var ilan = await _getCarByIdQuery.ExecuteAsync(carId);
+        if (ilan is null)
+            return NotFound(new { mesaj = "İlan bulunamadı." });
+
+        return Ok(ilan);
+    }
+
+    /// <summary>POST /cars — Yeni ilan ekle (RabbitMQ + Redis invalidation)</summary>
+    [Authorize]
     [HttpPost]
-    public async Task<IActionResult> AddCar([FromBody] AddCarRequest request)
+    public async Task<IActionResult> AddCar([FromBody] AddCarRequest istek)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var car = await _addCarCommand.ExecuteAsync(request, userId);
-        return StatusCode(201, car);
+        var ilan   = await _addCarCommand.ExecuteAsync(istek, userId);
+        return StatusCode(201, ilan);
     }
- 
-    /// <summary>Araç bilgilerini güncelle (auth zorunlu ve sadece ilan sahibi)</summary>
-    //[Authorize]
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCar(string id, [FromBody] UpdateCarRequest request, [FromServices] ICarRepository carRepository)
+
+    /// <summary>PUT /cars/{carId} — İlan güncelleme (sadece ilan sahibi)</summary>
+    [Authorize]
+    [HttpPut("{carId}")]
+    public async Task<IActionResult> UpdateCar(
+        string carId,
+        [FromBody] UpdateCarRequest istek,
+        [FromServices] ICarRepository carRepository)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var existingCar = await carRepository.GetByIdAsync(id);
- 
-        if (existingCar == null)
-            return NotFound(new { message = "Araç bulunamadı." });
- 
-        // Sadece aracın sahibi güncelleyebilir
-        if (existingCar.IlanSahibi != userId)
-            return Forbid();
- 
-        existingCar.Marka        = request.Marka;
-        existingCar.Resimler     = request.Resimler;
-        existingCar.Model        = request.Model;
-        existingCar.Yil          = request.Yil;
-        existingCar.Fiyat        = request.Fiyat;
-        existingCar.Konum        = request.Konum;
- 
-        var success = await carRepository.UpdateAsync(id, existingCar);
-        if (!success)
-            return BadRequest(new { message = "Araç güncellenirken bir hata oluştu." });
- 
-        return Ok(existingCar);
+        var userId  = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var mevcut  = await carRepository.GetByIdAsync(carId);
+
+        if (mevcut is null)
+            return NotFound(new { mesaj = "İlan bulunamadı." });
+
+        if (mevcut.IlanSahibi != userId)
+            return StatusCode(403, new { mesaj = "Bu ilanı güncelleme yetkiniz yok." });
+
+        var basarili = await _updateCarCommand.ExecuteAsync(carId, istek);
+        if (!basarili)
+            return BadRequest(new { mesaj = "İlan güncellenirken bir hata oluştu." });
+
+        return Ok(await carRepository.GetByIdAsync(carId));
     }
- 
-    /// <summary>Araç sil (auth zorunlu ve sadece ilan sahibi)</summary>
-    //[Authorize]
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCar(string id)
+
+    /// <summary>DELETE /cars/{carId} — İlan silme (sadece ilan sahibi)</summary>
+    [Authorize]
+    [HttpDelete("{carId}")]
+    public async Task<IActionResult> DeleteCar(string carId)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        
-        // Command içine hem araba id'sini hem de silmeye çalışan kullanıcı id'sini gönder.
-        var command = new DeleteCarCommand(id); 
-        var result = await _mediator.Send(command);
+        var komut  = new DeleteCarCommand(carId);
+        var sonuc  = await _mediator.Send(komut);
 
-        if (!result)
-            return NotFound(new { Message = "Araba bulunamadı veya silme yetkiniz yok." });
+        if (!sonuc)
+            return NotFound(new { mesaj = "İlan bulunamadı veya silme yetkiniz yok." });
 
-        return Ok(new { Message = "Araba ve bu arabaya ait tüm yorumlar başarıyla silindi." });
+        return Ok(new { mesaj = "İlan ve tüm yorumları başarıyla silindi." });
     }
 }

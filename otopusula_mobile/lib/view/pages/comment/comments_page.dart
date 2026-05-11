@@ -64,18 +64,30 @@ class _CommentsViewState extends State<_CommentsView> {
   Widget build(BuildContext context) {
     final currentUserId = context.read<AuthSessionViewModel>().userId;
     return Consumer<CarCommentsViewModel>(
-      builder: (ctx, vm, __) => Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.commentsTitle)),
-        body: Column(
-          children: [
-            Expanded(child: _buildBody(ctx, vm, currentUserId)),
-            CommentInputBar(
-              onSend: vm.addComment,
-              isLoading: vm.isLoading,
-            ),
-          ],
-        ),
-      ),
+      builder: (ctx, vm, __) {
+        // İkincil işlem hatalarını snackbar ile göster
+        if (vm.operationError != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(vm.operationError!)),
+            );
+            vm.clearOperationError();
+          });
+        }
+        return Scaffold(
+          appBar: AppBar(title: const Text(AppStrings.commentsTitle)),
+          body: Column(
+            children: [
+              Expanded(child: _buildBody(ctx, vm, currentUserId)),
+              CommentInputBar(
+                onSend: vm.addComment,
+                isLoading: vm.isLoading,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -101,6 +113,7 @@ class _CommentsViewState extends State<_CommentsView> {
           onRefresh: vm.load,
           child: ListView.separated(
             controller: _scroll,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(vertical: AppConstants.space8),
             itemCount: vm.comments.length + (vm.isFetchingMore ? 1 : 0),
             separatorBuilder: (_, __) => const Divider(height: 1),
@@ -117,7 +130,8 @@ class _CommentsViewState extends State<_CommentsView> {
               return CommentTile(
                 comment: comment,
                 currentUserId: currentUserId,
-                onLike: () => vm.likeComment(comment.id),
+                onLike: () => vm.likeComment(comment.id, currentUserId),
+                onUnlike: () => vm.unlikeComment(comment.id, currentUserId),
                 onDelete: () async {
                   final ok = await ConfirmDialog.show(
                     ctx,
@@ -128,7 +142,8 @@ class _CommentsViewState extends State<_CommentsView> {
                   );
                   if (ok) vm.deleteComment(comment.id);
                 },
-                onEdit: () => _showEditDialog(ctx, vm, comment.id, comment.content),
+                onEdit: () =>
+                    _showEditDialog(ctx, vm, comment.id, comment.content),
               );
             },
           ),
@@ -145,7 +160,7 @@ class _CommentsViewState extends State<_CommentsView> {
     final controller = TextEditingController(text: currentText);
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: const Text('Yorumu Düzenle'),
         content: TextField(
           controller: controller,
@@ -154,18 +169,18 @@ class _CommentsViewState extends State<_CommentsView> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
             child: const Text(AppStrings.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
             child: const Text(AppStrings.save),
           ),
         ],
       ),
     );
     if (ok == true && controller.text.trim().isNotEmpty) {
-      vm.updateComment(commentId, controller.text.trim());
+      await vm.updateComment(commentId, controller.text.trim());
     }
     controller.dispose();
   }

@@ -1,4 +1,7 @@
+import 'package:dio/dio.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/network/exceptions.dart';
+import '../../data/dto/user_update_dto.dart';
 import '../../data/models/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/user_repository.dart';
@@ -17,6 +20,10 @@ class ProfileViewModel extends BaseViewModel {
   bool get updateSuccess => _updateSuccess;
   bool get deleteSuccess => _deleteSuccess;
 
+  void resetDeleteSuccess() {
+    _deleteSuccess = false;
+  }
+
   ProfileViewModel({
     required UserRepository userRepository,
     required AuthRepository authRepository,
@@ -29,8 +36,17 @@ class ProfileViewModel extends BaseViewModel {
     try {
       _user = await _userRepository.getUser(userId);
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
@@ -38,11 +54,23 @@ class ProfileViewModel extends BaseViewModel {
     setLoading();
     _updateSuccess = false;
     try {
-      _user = await _authRepository.updateProfile(phone);
+      _user = await _authRepository.updateProfile(
+        userId,
+        UserUpdateDto(telefon: phone),
+      );
       _updateSuccess = true;
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
@@ -53,15 +81,26 @@ class ProfileViewModel extends BaseViewModel {
       await _authRepository.deleteAccount(userId);
       _deleteSuccess = true;
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
-  String _friendlyMessage(Exception e) {
-    final msg = e.toString().toLowerCase();
-    if (msg.contains('network') || msg.contains('connection')) return AppStrings.errorNetwork;
-    if (msg.contains('404') || msg.contains('notfound')) return AppStrings.errorNotFound;
-    return AppStrings.errorGeneric;
+  String _friendlyApiMessage(ApiException e) {
+    return switch (e) {
+      NotFoundException() => AppStrings.errorNotFound,
+      NetworkException() => AppStrings.errorNetwork,
+      ServerException() => 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+      _ => e.message,
+    };
   }
 }

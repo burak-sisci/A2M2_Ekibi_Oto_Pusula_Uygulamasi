@@ -1,57 +1,36 @@
-class PriceRange {
-  final int min;
-  final int max;
-
-  const PriceRange({required this.min, required this.max});
-
-  factory PriceRange.fromJson(Map<String, dynamic> json) => PriceRange(
-        min: json['min'] as int,
-        max: json['max'] as int,
-      );
-
-  Map<String, dynamic> toJson() => {'min': min, 'max': max};
-
-  PriceRange copyWith({int? min, int? max}) =>
-      PriceRange(min: min ?? this.min, max: max ?? this.max);
-}
-
+// Backend: {durum, tahminSonucu: {fiyatEtiketi, birim}}
 class PricePredict {
-  final int estimatedPrice;
-  final PriceRange priceRange;
-  final double confidence;
-  final DateTime generatedAt;
+  final String status;
+  final String priceLabel;
+  final String unit;
 
   const PricePredict({
-    required this.estimatedPrice,
-    required this.priceRange,
-    required this.confidence,
-    required this.generatedAt,
+    required this.status,
+    required this.priceLabel,
+    required this.unit,
   });
 
-  factory PricePredict.fromJson(Map<String, dynamic> json) => PricePredict(
-        estimatedPrice: json['estimatedPrice'] as int,
-        priceRange: PriceRange.fromJson(json['priceRange'] as Map<String, dynamic>),
-        confidence: (json['confidence'] as num).toDouble(),
-        generatedAt: DateTime.parse(json['generatedAt'] as String),
-      );
+  factory PricePredict.fromJson(Map<String, dynamic> json) {
+    final tahmin = json['tahminSonucu'] as Map<String, dynamic>? ?? {};
+    return PricePredict(
+      status: json['durum'] as String? ?? '',
+      priceLabel: tahmin['fiyatEtiketi'] as String? ?? '',
+      unit: tahmin['birim'] as String? ?? 'TL',
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-        'estimatedPrice': estimatedPrice,
-        'priceRange': priceRange.toJson(),
-        'confidence': confidence,
-        'generatedAt': generatedAt.toIso8601String(),
+        'durum': status,
+        'tahminSonucu': {
+          'fiyatEtiketi': priceLabel,
+          'birim': unit,
+        },
       };
 
-  PricePredict copyWith({
-    int? estimatedPrice,
-    PriceRange? priceRange,
-    double? confidence,
-    DateTime? generatedAt,
-  }) =>
+  PricePredict copyWith({String? status, String? priceLabel, String? unit}) =>
       PricePredict(
-        estimatedPrice: estimatedPrice ?? this.estimatedPrice,
-        priceRange: priceRange ?? this.priceRange,
-        confidence: confidence ?? this.confidence,
-        generatedAt: generatedAt ?? this.generatedAt,
+        status: status ?? this.status,
+        priceLabel: priceLabel ?? this.priceLabel,
+        unit: unit ?? this.unit,
       );
 }

@@ -1,9 +1,15 @@
 class AppConstants {
   AppConstants._();
 
-  // Android emülatör → localhost. iOS için http://localhost:5078 kullanın.
-  // Fiziksel cihaz için bilgisayarın LAN IP'si: http://192.168.x.x:5078
-  static const baseUrl = 'http://10.0.2.2:5078';
+  // Ortam bazlı API adresi — varsayılan Android emülatör adresidir.
+  // Android emülatör : flutter run (varsayılan)
+  // iOS simülatör    : flutter run --dart-define=API_BASE_URL=http://localhost:8081
+  // Fiziksel cihaz   : flutter run --dart-define=API_BASE_URL=http://192.168.x.x:8081
+  // Production       : flutter run --dart-define=API_BASE_URL=https://api.otopusula.com
+  static const baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.0.2.2:8081',
+  );
 
   // Sayfalandırma
   static const defaultPageSize = 10;

@@ -5,9 +5,8 @@ class ApiEndpoints {
   static const authRegister = '/auth/register';
   static const authLogin = '/auth/login';
   static const authLogout = '/auth/logout';
-  static const authProfile = '/auth/profile';
-
-  static String authDelete(String id) => '/auth/$id';
+  static const authForgotPassword = '/auth/forgot-password';
+  static const authResetPassword = '/auth/reset-password';
 
   // Users
   static String user(String userId) => '/users/$userId';
@@ -16,14 +15,13 @@ class ApiEndpoints {
 
   // Cars
   static const cars = '/cars';
-  static const predictPrice = '/cars/predict-price';
+  static const predictPrice = '/api/Prediction/predict';
   static String car(String carId) => '/cars/$carId';
   static String carShare(String carId) => '/cars/$carId/share';
   static String carComments(String carId) => '/cars/$carId/comments';
 
   // Comments
   static String comment(String commentId) => '/comments/$commentId';
-  // TODO: Backend'de henüz implement edilmedi — eklenince aktif edilecek
   static String commentLike(String commentId) => '/comments/$commentId/like';
 
   // Lists

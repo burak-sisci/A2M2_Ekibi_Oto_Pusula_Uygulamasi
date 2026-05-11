@@ -7,6 +7,27 @@ import '../common/app_text_field.dart';
 import '../common/primary_button.dart';
 import '../common/secondary_button.dart';
 
+class _DropItem {
+  final String label;
+  final String value;
+  const _DropItem(this.label, this.value);
+}
+
+const _yakitItems = [
+  _DropItem('Benzin', 'Benzin'),
+  _DropItem('Dizel', 'Dizel'),
+  _DropItem('Elektrik', 'Elektrik'),
+  _DropItem('Hibrit', 'Hibrit'),
+  _DropItem('LPG', 'LPG'),
+  _DropItem('Benzin + LPG', 'Benzin_LPG'),
+];
+
+const _vitesItems = [
+  _DropItem('Manuel', 'Düz'),
+  _DropItem('Otomatik', 'Otomatik'),
+  _DropItem('Yarı Otomatik', 'YariOtomatik'),
+];
+
 class CarFilterSheet extends StatefulWidget {
   final CarFilterParams initialFilter;
   final void Function(CarFilterParams) onApply;
@@ -141,8 +162,8 @@ class _CarFilterSheetState extends State<CarFilterSheet> {
             AppDropdown<String>(
               label: AppStrings.fuelTypeLabel,
               value: _fuelType,
-              items: ['Benzin', 'Dizel', 'Elektrik', 'Hibrit', 'LPG']
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+              items: _yakitItems
+                  .map((e) => DropdownMenuItem(value: e.value, child: Text(e.label)))
                   .toList(),
               onChanged: (v) => setState(() => _fuelType = v),
             ),
@@ -150,8 +171,8 @@ class _CarFilterSheetState extends State<CarFilterSheet> {
             AppDropdown<String>(
               label: AppStrings.gearTypeLabel,
               value: _gearType,
-              items: ['Manuel', 'Otomatik', 'Yarı Otomatik']
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+              items: _vitesItems
+                  .map((e) => DropdownMenuItem(value: e.value, child: Text(e.label)))
                   .toList(),
               onChanged: (v) => setState(() => _gearType = v),
             ),

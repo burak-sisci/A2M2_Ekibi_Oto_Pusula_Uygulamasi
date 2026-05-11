@@ -45,7 +45,10 @@ class _CarDetailView extends StatelessWidget {
     return Consumer<CarDetailViewModel>(
       builder: (ctx, vm, __) {
         if (vm.deleteSuccess) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => context.pop());
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            vm.resetDeleteSuccess();
+            context.pop();
+          });
         }
         return Scaffold(
           appBar: AppBar(
@@ -96,6 +99,7 @@ class _CarDetailView extends StatelessWidget {
         if (vm.car == null) return const SizedBox.shrink();
         final car = vm.car!;
         return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -106,7 +110,12 @@ class _CarDetailView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${car.brand} ${car.model} ${car.year}',
+                      [
+                        car.brand,
+                        if (car.series.isNotEmpty) car.series,
+                        car.model,
+                        car.year.toString(),
+                      ].join(' '),
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: AppConstants.space8),
@@ -135,11 +144,55 @@ class _CarDetailView extends StatelessWidget {
                       label: AppStrings.gearTypeLabel,
                       value: car.gearType,
                     ),
+                    if (car.bodyType.isNotEmpty) ...[
+                      const SizedBox(height: AppConstants.space12),
+                      CarSpecRow(
+                        icon: Icons.directions_car_outlined,
+                        label: 'Kasa Tipi',
+                        value: car.bodyType,
+                      ),
+                    ],
+                    if (car.color.isNotEmpty) ...[
+                      const SizedBox(height: AppConstants.space12),
+                      CarSpecRow(
+                        icon: Icons.palette_outlined,
+                        label: 'Renk',
+                        value: car.color,
+                      ),
+                    ],
                     const SizedBox(height: AppConstants.space12),
                     CarSpecRow(
                       icon: Icons.location_on_outlined,
                       label: AppStrings.cityLabel,
                       value: '${car.location.city} / ${car.location.district}',
+                    ),
+                    if (car.sellerType.isNotEmpty) ...[
+                      const SizedBox(height: AppConstants.space12),
+                      CarSpecRow(
+                        icon: Icons.storefront_outlined,
+                        label: 'Kimden',
+                        value: car.sellerType,
+                      ),
+                    ],
+                    const SizedBox(height: AppConstants.space12),
+                    Row(
+                      children: [
+                        if (car.heavilyDamaged)
+                          const _BadgeChip(
+                            label: 'Ağır Hasar Kaydı Var',
+                            color: AppColors.danger,
+                            icon: Icons.warning_amber_rounded,
+                          ),
+                        if (car.tradeEligible) ...[
+                          if (car.heavilyDamaged)
+                            const SizedBox(width: AppConstants.space8),
+                          const _BadgeChip(
+                            label: 'Takasa Uygun',
+                            color: AppColors.primary,
+                            icon: Icons.swap_horiz,
+                          ),
+                        ],
+                      ],
                     ),
                     const Divider(height: AppConstants.space32),
                     Text(
@@ -197,12 +250,53 @@ class _CarDetailView extends StatelessWidget {
   }
 
   Future<void> _shareLink(BuildContext context, CarDetailViewModel vm) async {
+
     await vm.fetchShareLink();
-    if (vm.shareLink != null && context.mounted) {
+    if (!context.mounted) return;
+    if (vm.shareLink != null) {
       await Clipboard.setData(ClipboardData(text: vm.shareLink!.shortUrl));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.shareLinkCopied)),
+        SnackBar(content: Text('${AppStrings.shareLinkCopied}\n${vm.shareLink!.shortUrl}')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(vm.shareLinkError ?? 'Paylaşım linki alınamadı.')),
       );
     }
+  }
+}
+
+class _BadgeChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  const _BadgeChip({
+    required this.label,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        border: Border.all(color: color.withOpacity(0.4)),
+        borderRadius: BorderRadius.circular(AppConstants.radiusPill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
   }
 }

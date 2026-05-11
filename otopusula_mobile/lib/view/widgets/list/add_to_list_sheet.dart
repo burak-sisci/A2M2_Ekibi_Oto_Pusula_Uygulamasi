@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/network/exceptions.dart';
 import '../../../data/models/list_model.dart';
 import '../../../data/repositories/list_repository.dart';
 import '../../../data/repositories/user_repository.dart';
@@ -71,6 +73,15 @@ class _AddToListSheetState extends State<AddToListSheet> {
         );
         Navigator.of(context).pop();
       }
+    } on DioException catch (e) {
+      if (mounted) {
+        final msg = e.error is ApiException
+            ? (e.error as ApiException).message
+            : AppStrings.errorGeneric;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
     } on Exception {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -93,7 +104,29 @@ class _AddToListSheetState extends State<AddToListSheet> {
           const SizedBox(height: AppConstants.space16),
           if (_loading) const LoadingIndicator(),
           if (_error != null) Text(_error!),
-          if (_lists != null)
+          if (_lists != null && _lists!.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppConstants.space24),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.bookmark_border, size: 40, color: Colors.grey),
+                    const SizedBox(height: AppConstants.space8),
+                    const Text(
+                      'Henüz listeniz yok.',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: AppConstants.space4),
+                    const Text(
+                      '"Listelerim" sekmesinden yeni liste oluşturabilirsiniz.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (_lists != null && _lists!.isNotEmpty)
             ..._lists!.map(
               (l) => ListTile(
                 leading: const Icon(Icons.list_alt_outlined),

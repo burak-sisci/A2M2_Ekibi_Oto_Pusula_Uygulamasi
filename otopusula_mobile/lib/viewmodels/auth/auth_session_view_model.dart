@@ -23,13 +23,22 @@ class AuthSessionViewModel extends ChangeNotifier {
         _tokenStorage = tokenStorage;
 
   Future<void> init() async {
-    final token = await _tokenStorage.readToken();
-    final userId = await _tokenStorage.readUserId();
-    if (token != null && userId != null) {
-      _token = token;
-      _userId = userId;
-      _status = AuthStatus.authenticated;
-    } else {
+    try {
+      final results = await Future.wait([
+        _tokenStorage.readToken(),
+        _tokenStorage.readUserId(),
+      ]).timeout(const Duration(seconds: 5));
+      final token = results[0];
+      final userId = results[1];
+      if (token != null && userId != null) {
+        _token = token;
+        _userId = userId;
+        _status = AuthStatus.authenticated;
+      } else {
+        _status = AuthStatus.unauthenticated;
+      }
+    } catch (_) {
+      // Keystore zaman aşımı veya hata → login sayfasına yönlendir
       _status = AuthStatus.unauthenticated;
     }
     notifyListeners();

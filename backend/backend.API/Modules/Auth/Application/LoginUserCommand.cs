@@ -20,18 +20,21 @@ public class LoginUserCommand
 
     public async Task<LoginResult> ExecuteAsync(LoginRequest request)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email)
-            ?? throw new UnauthorizedAccessException("Geçersiz e-posta veya şifre.");
+        // Email veya telefon ile giriş desteklenir
+        var user = request.Identifier.Contains('@')
+            ? await _userRepository.GetByEmailAsync(request.Identifier)
+            : await _userRepository.GetByPhoneAsync(request.Identifier);
 
-        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
-            throw new UnauthorizedAccessException("Geçersiz e-posta veya şifre.");
+        if (user is null || !_passwordHasher.Verify(request.Sifre, user.PasswordHash))
+            throw new UnauthorizedAccessException("Kimlik bilgileri hatalı.");
 
         var token = _jwtTokenGenerator.GenerateToken(user.Id, user.Email);
-        return new LoginResult(user.Id, user.Email, token);
+
+        return new LoginResult(user.Id, user.Email, user.Ad, token);
     }
 }
 
-public record LoginRequest(string Email, string Password);
-public record LoginResult(string UserId, string Email, string Token);
+public record LoginRequest(string Identifier, string Sifre);
+public record LoginResult(string KullaniciId, string Email, string Ad, string Token);
 public record ForgotPasswordRequest(string Email);
-public record ResetPasswordRequest(string Token, string NewPassword);
+public record ResetPasswordRequest(string Token, string YeniSifre);

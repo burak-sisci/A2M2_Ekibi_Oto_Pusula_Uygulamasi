@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/network/exceptions.dart';
 import '../../data/dto/user_login_dto.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../base_view_model.dart';
@@ -26,22 +28,34 @@ class LoginViewModel extends BaseViewModel {
         UserLoginDto(identifier: identifier, password: password),
       );
       _token = data['token'] as String?;
-      _userId = data['userId'] as String? ?? data['_id'] as String?;
+      // Backend: {kullaniciId, email, ad, token}
+      _userId = data['kullaniciId'] as String?
+          ?? data['userId'] as String?
+          ?? data['_id'] as String?;
       _loginSuccess = true;
       setSuccess();
-    } on Exception catch (e) {
-      setError(_friendlyMessage(e));
+    } on DioException catch (e) {
+      // ErrorInterceptor, DioException.error alanına ApiException koyar
+      final apiError = e.error;
+      if (apiError is ApiException) {
+        setError(_friendlyApiMessage(apiError));
+      } else {
+        setError(AppStrings.errorGeneric);
+      }
+    } on ApiException catch (e) {
+      setError(_friendlyApiMessage(e));
+    } on Exception catch (_) {
+      setError(AppStrings.errorNetwork);
     }
   }
 
-  String _friendlyMessage(Exception e) {
-    final msg = e.toString().toLowerCase();
-    if (msg.contains('network') || msg.contains('connection')) {
-      return AppStrings.errorNetwork;
-    }
-    if (msg.contains('401') || msg.contains('unauthorized')) {
-      return 'E-posta/telefon veya şifre hatalı.';
-    }
-    return AppStrings.errorGeneric;
+  String _friendlyApiMessage(ApiException e) {
+    return switch (e) {
+      UnauthorizedException() || BadRequestException() =>
+        'E-posta/telefon veya şifre hatalı.',
+      NetworkException() => AppStrings.errorNetwork,
+      ServerException() => 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+      _ => e.message,
+    };
   }
 }

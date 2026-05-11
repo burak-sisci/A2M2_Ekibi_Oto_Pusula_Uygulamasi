@@ -12,24 +12,14 @@ public class MongoUserRepository : IUserRepository
     public MongoUserRepository(MongoDbContext context)
     {
         _collection = context.GetCollection<User>("users");
-        CreateIndexes();
-    }
-
-    private void CreateIndexes()
-    {
-        var emailIndex = new CreateIndexModel<User>(
-            Builders<User>.IndexKeys.Ascending(u => u.Email),
-            new CreateIndexOptions { Unique = true });
-
-        var phoneIndex = new CreateIndexModel<User>(
-            Builders<User>.IndexKeys.Ascending(u => u.Phone),
-            new CreateIndexOptions { Unique = true });
-
-        _collection.Indexes.CreateMany([emailIndex, phoneIndex]);
+        // Indexler artık MongoIndexInitializer (IHostedService) tarafından startup'ta oluşturulur.
     }
 
     public async Task<User?> GetByEmailAsync(string email)
         => await _collection.Find(u => u.Email == email).FirstOrDefaultAsync();
+
+    public async Task<User?> GetByPhoneAsync(string phone)
+        => await _collection.Find(u => u.Phone == phone).FirstOrDefaultAsync();
 
     public async Task<User?> GetByIdAsync(string id)
         => await _collection.Find(u => u.Id == id).FirstOrDefaultAsync();
@@ -58,9 +48,8 @@ public class MongoUserRepository : IUserRepository
     }
 
     public async Task<bool> DeleteAsync(string id)
-{
-    var result = await _collection.DeleteOneAsync(u => u.Id == id);
-    return result.DeletedCount > 0;
-}
-
+    {
+        var result = await _collection.DeleteOneAsync(u => u.Id == id);
+        return result.DeletedCount > 0;
+    }
 }

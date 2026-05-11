@@ -4,7 +4,18 @@ import 'exceptions.dart';
 class ErrorInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    throw _mapError(err);
+    final mapped = _mapError(err);
+    // Dio interceptor zincirini kırmamak için handler.reject() kullanılmalı.
+    // throw kullanmak DioException [unknown] hatasına neden olur.
+    handler.reject(
+      DioException(
+        requestOptions: err.requestOptions,
+        response: err.response,
+        type: err.type,
+        error: mapped,
+        message: mapped.message,
+      ),
+    );
   }
 
   ApiException _mapError(DioException err) {
@@ -16,22 +27,32 @@ class ErrorInterceptor extends Interceptor {
     }
 
     final statusCode = err.response?.statusCode;
+    final backendMsg = _extractMessage(err.response?.data);
+
     switch (statusCode) {
       case 400:
-        return const BadRequestException();
+        return BadRequestException(backendMsg ?? 'Geçersiz istek.');
       case 401:
-        return const UnauthorizedException();
+        return UnauthorizedException(backendMsg ?? 'Yetkisiz erişim.');
       case 403:
-        return const ForbiddenException();
+        return ForbiddenException(backendMsg ?? 'Bu işlem için yetkiniz yok.');
       case 404:
-        return const NotFoundException();
+        return NotFoundException(backendMsg ?? 'İçerik bulunamadı.');
       case 409:
-        return const ConflictException();
+        return ConflictException(backendMsg ?? 'Bu kayıt zaten mevcut.');
       default:
         if (statusCode != null && statusCode >= 500) {
           return const ServerException();
         }
         return const NetworkException();
     }
+  }
+
+  String? _extractMessage(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      final msg = data['message'] ?? data['mesaj'] ?? data['error'];
+      if (msg is String && msg.isNotEmpty) return msg;
+    }
+    return null;
   }
 }

@@ -35,7 +35,7 @@ public record CarsFilter(
     VitesTipi? VitesTipi = null,
     YakitTipi? YakitTipi = null,
     KasaTipi? KasaTipi = null,
-    DriveType? Cekis = null,
+    CekisTuru? Cekis = null,
     AracDurumu? AracDurumu = null,
     Kimden? Kimden = null,
 
