@@ -12,9 +12,15 @@ ML_Model_V4/__pycache__/
 backend/backend.API/bin/
 backend/backend.API/obj/
 backend/.vs/
+notification-service/bin/
+notification-service/obj/
 
 # Environment files (secrets)
 backend/backend.API/.env
+backend/.env
+notification-service/.env
+notification-service/firebase-credentials.json
+otopusula_mobile/android/app/google-services.json
 frontend/.env.local
 frontend/.env.production.local
 

@@ -7,6 +7,7 @@ import 'error_interceptor.dart';
 
 class ApiClient {
   late final Dio dio;
+  late final AuthInterceptor authInterceptor;
 
   ApiClient({required TokenStorage tokenStorage}) {
     dio = Dio(
@@ -18,8 +19,10 @@ class ApiClient {
       ),
     );
 
+    authInterceptor = AuthInterceptor(tokenStorage);
+
     dio.interceptors.addAll([
-      AuthInterceptor(tokenStorage),
+      authInterceptor,
       ErrorInterceptor(),
       // Debug build'de payload loglanır; release build'de sızdırmaz (developer.md §12)
       if (kDebugMode)

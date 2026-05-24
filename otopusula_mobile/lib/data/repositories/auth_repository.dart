@@ -26,8 +26,20 @@ class AuthRepository {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<void> logout() async {
-    await _apiClient.dio.post(ApiEndpoints.authLogout);
+  Future<void> logout({String? refreshToken}) async {
+    await _apiClient.dio.post(
+      ApiEndpoints.authLogout,
+      data: refreshToken == null ? null : {'RefreshToken': refreshToken},
+    );
+  }
+
+  /// Backend `/auth/refresh` — eski refresh token revoke edilir, yeni access+refresh döner.
+  Future<Map<String, dynamic>> refresh(String refreshToken) async {
+    final response = await _apiClient.dio.post(
+      ApiEndpoints.authRefresh,
+      data: {'RefreshToken': refreshToken},
+    );
+    return response.data as Map<String, dynamic>;
   }
 
   // PUT /users/{userId} — ad, telefon veya yeniSifre güncellenebilir

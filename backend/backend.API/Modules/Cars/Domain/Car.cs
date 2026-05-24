@@ -116,6 +116,7 @@ public class BoyaliveDegisen
     public PanelStatus  ArkaTampon { get; set; } = PanelStatus.  Orijinal;       // Arka Tampon
 }
 
+[BsonIgnoreExtraElements]
 public class Car
 {
     [BsonId]

@@ -147,14 +147,22 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 // ═══════════════════════════════════════════════════════════════
 // Singleton: IMongoCollection<T> thread-safe, her istekte yeni nesne yaratmaya gerek yok
 builder.Services.AddSingleton<IUserRepository, MongoUserRepository>();
+builder.Services.AddSingleton<IDeviceRepository, MongoDeviceRepository>();
 builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
 if (redisAvailable)
+{
     builder.Services.AddScoped<ITokenBlacklist, RedisTokenBlacklist>();
+    builder.Services.AddScoped<IRefreshTokenStore, RedisRefreshTokenStore>();
+}
 else
+{
     builder.Services.AddScoped<ITokenBlacklist, NoOpTokenBlacklist>();
+    builder.Services.AddScoped<IRefreshTokenStore, NoOpRefreshTokenStore>();
+}
 builder.Services.AddScoped<RegisterUserCommand>();
 builder.Services.AddScoped<LoginUserCommand>();
 builder.Services.AddScoped<LogoutUserCommand>();
+builder.Services.AddScoped<RefreshTokenCommand>();
 
 // ═══════════════════════════════════════════════════════════════
 // MODÜL B — Araç İlanları & Yapay Zeka (Anıl Elmaz)

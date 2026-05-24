@@ -43,7 +43,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onVmChange() {
     if (_vm.loginSuccess && _vm.token != null && _vm.userId != null) {
-      context.read<AuthSessionViewModel>().setAuthenticated(_vm.token!, _vm.userId!);
+      context.read<AuthSessionViewModel>().setAuthenticated(
+            _vm.token!,
+            _vm.userId!,
+            refreshToken: _vm.refreshToken,
+          );
       // GoRouter redirect, auth durumu değişince otomatik /home'a yönlendirir
     }
     if (_vm.hasError && mounted) {

@@ -27,6 +27,7 @@ public class MongoIndexInitializer : IHostedService
         try
         {
             await CreateUserIndexesAsync(cancellationToken);
+            await CreateDeviceIndexesAsync(cancellationToken);
             await CreateCarIndexesAsync(cancellationToken);
             await CreateCommentIndexesAsync(cancellationToken);
             await CreateListIndexesAsync(cancellationToken);
@@ -63,6 +64,22 @@ public class MongoIndexInitializer : IHostedService
             new CreateIndexOptions { Unique = true, Sparse = true, Name = "phone_unique" });
 
         await col.Indexes.CreateManyAsync([emailIndex, phoneIndex], cancellationToken: ct);
+    }
+
+    // ── Devices ────────────────────────────────────────────────────────────────
+    private async Task CreateDeviceIndexesAsync(CancellationToken ct)
+    {
+        var col = _context.GetCollection<Device>("devices");
+
+        var compoundIndex = new CreateIndexModel<Device>(
+            Builders<Device>.IndexKeys.Ascending(d => d.UserId).Ascending(d => d.FcmToken),
+            new CreateIndexOptions { Unique = true, Name = "device_user_token_unique" });
+
+        var userIdIndex = new CreateIndexModel<Device>(
+            Builders<Device>.IndexKeys.Ascending(d => d.UserId),
+            new CreateIndexOptions { Name = "device_userId" });
+
+        await col.Indexes.CreateManyAsync([compoundIndex, userIdIndex], cancellationToken: ct);
     }
 
     // ── Cars ───────────────────────────────────────────────────────────────────

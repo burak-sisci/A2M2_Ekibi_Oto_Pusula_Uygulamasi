@@ -1,4 +1,4 @@
-package com.example.otopusula_mobile
+package com.a2m2.otopusula
 
 import io.flutter.embedding.android.FlutterActivity
 

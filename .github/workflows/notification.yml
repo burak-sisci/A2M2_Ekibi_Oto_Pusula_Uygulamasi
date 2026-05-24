@@ -1,0 +1,44 @@
+name: Notification Service CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'notification-service/**'
+      - '.github/workflows/notification.yml'
+  pull_request:
+    paths:
+      - 'notification-service/**'
+      - '.github/workflows/notification.yml'
+
+jobs:
+  build:
+    name: Restore + Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notification-service
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK (preview)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'preview'
+
+      - name: NuGet cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-notif-${{ hashFiles('notification-service/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-notif-
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (Release)
+        run: dotnet build --configuration Release --no-restore

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/network/api_client.dart';
+import 'core/push/fcm_service.dart';
 import 'core/router/app_router.dart';
 import 'core/storage/token_storage.dart';
 import 'core/theme/app_theme.dart';
@@ -12,6 +13,7 @@ import 'data/repositories/ai_repository.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/car_repository.dart';
 import 'data/repositories/comment_repository.dart';
+import 'data/repositories/device_repository.dart';
 import 'data/repositories/list_repository.dart';
 import 'data/repositories/user_repository.dart';
 
@@ -49,6 +51,8 @@ class _AppState extends State<App> {
   late final AiRepository _aiRepository;
   late final ListRepository _listRepository;
   late final CommentRepository _commentRepository;
+  late final DeviceRepository _deviceRepository;
+  late final FcmService _fcmService;
   late final AuthSessionViewModel _authSession;
   late final GoRouter _router;
 
@@ -63,10 +67,15 @@ class _AppState extends State<App> {
     _aiRepository = AiRepository(apiClient: _apiClient);
     _listRepository = ListRepository(apiClient: _apiClient);
     _commentRepository = CommentRepository(apiClient: _apiClient);
+    _deviceRepository = DeviceRepository(apiClient: _apiClient);
+    _fcmService = FcmService(deviceRepository: _deviceRepository);
     _authSession = AuthSessionViewModel(
       authRepository: _authRepository,
       tokenStorage: _tokenStorage,
+      fcmService: _fcmService,
     );
+    // Interceptor refresh başarısız olunca session'ı temizlesin
+    _apiClient.authInterceptor.onSessionExpired = _authSession.handleSessionExpired;
     _router = _buildRouter();
     _authSession.init();
   }

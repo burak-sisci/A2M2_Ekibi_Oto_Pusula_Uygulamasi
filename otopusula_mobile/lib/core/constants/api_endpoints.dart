@@ -5,8 +5,13 @@ class ApiEndpoints {
   static const authRegister = '/auth/register';
   static const authLogin = '/auth/login';
   static const authLogout = '/auth/logout';
+  static const authRefresh = '/auth/refresh';
   static const authForgotPassword = '/auth/forgot-password';
   static const authResetPassword = '/auth/reset-password';
+
+  // Devices (Faz 1.5)
+  static const devicesRegister = '/devices/register';
+  static const devicesUnregister = '/devices/unregister';
 
   // Users
   static String user(String userId) => '/users/$userId';

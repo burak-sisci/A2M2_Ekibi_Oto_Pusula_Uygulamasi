@@ -11,10 +11,12 @@ class LoginViewModel extends BaseViewModel {
   // View bu alanları okur; callback ile navigate eder
   bool _loginSuccess = false;
   String? _token;
+  String? _refreshToken;
   String? _userId;
 
   bool get loginSuccess => _loginSuccess;
   String? get token => _token;
+  String? get refreshToken => _refreshToken;
   String? get userId => _userId;
 
   LoginViewModel({required AuthRepository authRepository})
@@ -27,8 +29,9 @@ class LoginViewModel extends BaseViewModel {
       final data = await _authRepository.login(
         UserLoginDto(identifier: identifier, password: password),
       );
-      _token = data['token'] as String?;
-      // Backend: {kullaniciId, email, ad, token}
+      // Backend (Faz 1.5): {kullaniciId, email, ad, token, accessToken, refreshToken, accessExpiresIn}
+      _token = (data['accessToken'] as String?) ?? (data['token'] as String?);
+      _refreshToken = data['refreshToken'] as String?;
       _userId = data['kullaniciId'] as String?
           ?? data['userId'] as String?
           ?? data['_id'] as String?;
