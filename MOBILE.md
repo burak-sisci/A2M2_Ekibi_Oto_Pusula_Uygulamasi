@@ -408,7 +408,7 @@ await _eventPublisher.PublishAsync("otopusula", "email.send", new EmailSendEvent
 ACCESS_TOKEN_MINUTES=15
 REFRESH_TOKEN_DAYS=30
 RABBITMQ_URL=amqps://user:pass@host/vhost
-FRONTEND_URL=https://a2m2ekibiotopusulauygulamasi-production.up.railway.app
+FRONTEND_URL=https://otopusula-backend.onrender.com
 ```
 
 ### 1.7 Test
@@ -742,7 +742,7 @@ class ApiClient {
   ApiClient(TokenStorage storage) {
     dio = Dio(BaseOptions(
       baseUrl: const String.fromEnvironment('API_URL',
-        defaultValue: 'https://backend-production-f151.up.railway.app'),
+        defaultValue: 'https://otopusula-backend.onrender.com'),
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
     ));
@@ -1140,7 +1140,7 @@ JWT_SECRET=...
 ISSUER=OtoPusula
 AUDIENCE=OtoPusula
 REDIS_CONNECTION_STRING=...
-FASTAPI_BASE_URL=https://ml-model-production-8caa.up.railway.app
+FASTAPI_BASE_URL=https://burak-sisci-otopusula-ml.hf.space
 PORT=8080
 ASPNETCORE_ENVIRONMENT=Production
 

@@ -1,6 +1,6 @@
 # REST API Görev Dağılımı
 
-**REST API Adresi:** [backend-production](https://backend-production-f151.up.railway.app/swagger)
+**REST API Adresi:** [otopusula-backend Swagger](https://otopusula-backend.onrender.com/swagger) (canlı, Render free tier — ilk istek ~30 sn cold start)
 
 Bu dokümanda, proje ekibindeki her üyenin geliştirmekten sorumlu olduğu REST API metotları listelenmektedir.
 

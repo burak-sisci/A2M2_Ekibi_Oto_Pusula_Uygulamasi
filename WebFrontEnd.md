@@ -1,6 +1,6 @@
 # Web Frontend Görev Dağılımı
 
-**Web Frontend Adresi:** [a2m2ekibiotopusulauygulamasi](https://a2m2ekibiotopusulauygulamasi-production.up.railway.app/)
+**Web Frontend Adresi:** _şu an cloud'da yayında değil — yerelde `cd frontend && npm start` ile `http://localhost:3000` üzerinden test edilir. Backend canlı URL'i: `https://otopusula-backend.onrender.com`._
 
 Bu dokümanda, web uygulamasının kullanıcı arayüzü (UI) ve kullanıcı deneyimi (UX) görevleri listelenmektedir. Her grup üyesi, kendisine atanan sayfaların tasarımı, implementasyonu ve kullanıcı etkileşimlerinden sorumludur.
 

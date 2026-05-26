@@ -17,7 +17,7 @@
 9. [Kimlik Doğrulama Sistemi](#9-kimlik-doğrulama-sistemi)
 10. [Ortam Değişkenleri](#10-ortam-değişkenleri)
 11. [Yerel Geliştirme Ortamı Kurulumu](#11-yerel-geliştirme-ortamı-kurulumu)
-12. [Deployment (Railway)](#12-deployment-railway)
+12. [Deployment (Render + HF Spaces)](#12-deployment-render--hf-spaces)
 13. [Ekip ve Modül Sahipliği](#13-ekip-ve-modül-sahipliği)
 
 ---
@@ -39,12 +39,17 @@
 
 | Servis | URL |
 |--------|-----|
-| Web Frontend | `https://a2m2ekibiotopusulauygulamasi-production.up.railway.app` |
-| REST API | `https://backend-production-f151.up.railway.app` |
-| Swagger (API Dökümantasyonu) | `https://backend-production-f151.up.railway.app/swagger` |
-| ML Model | `https://ml-model-production-8caa.up.railway.app` |
-| ML Model Swagger | `https://ml-model-production-8caa.up.railway.app/docs` |
-| Health Check | `https://backend-production-f151.up.railway.app/health` |
+| REST API | `https://otopusula-backend.onrender.com` |
+| Swagger (API Dökümantasyonu) | `https://otopusula-backend.onrender.com/swagger` |
+| Health Check | `https://otopusula-backend.onrender.com/health` |
+| ML Model (FastAPI) | `https://burak-sisci-otopusula-ml.hf.space` |
+| ML Model Health | `https://burak-sisci-otopusula-ml.hf.space/health` |
+| Notification Service | `https://burak-sisci-otopusula-notification.hf.space` |
+| ML Model Repo (HF) | `https://huggingface.co/burak-sisci/otopusula-model` |
+| Web Frontend | _şu an cloud'da değil — yerel kurulum (`npm start` → `http://localhost:3000`)_ |
+| Mobil APK (release) | `https://github.com/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi/releases/latest` |
+
+> Backend ve HF servisleri free tier'da idle uyumasından sonra ilk istekte ~30 sn cold start yapabilir.
 
 ---
 
@@ -52,38 +57,33 @@
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                     KULLANICI (Browser)                  │
+│           KULLANICI (Web Browser veya Android APK)       │
 └───────────────────────────┬──────────────────────────────┘
                             │ HTTPS
                             ▼
 ┌──────────────────────────────────────────────────────────┐
-│              Frontend  (React 19 + Nginx)                │
-│         a2m2ekibiotopusulauygulamasi-production.         │
-│                     up.railway.app                       │
-└───────────────────────────┬──────────────────────────────┘
-                            │ REST API çağrıları (Axios)
-                            ▼
-┌──────────────────────────────────────────────────────────┐
-│           Backend  (ASP.NET Core 10 — Port 8080)         │
-│         backend-production-f151.up.railway.app           │
+│           Backend  (ASP.NET Core 10 — Render)            │
+│             otopusula-backend.onrender.com               │
 │                                                          │
 │  ┌──────────┐ ┌────────┐ ┌────────┐ ┌──────┐ ┌───────┐  │
-│  │   Auth   │ │  Cars  │ │ Lists  │ │Comms │ │Predict│  │
-│  │  Module  │ │ Module │ │ Module │ │Module│ │Module │  │
+│  │  Auth +  │ │  Cars  │ │ Lists  │ │Comms │ │Predict│  │
+│  │ Devices  │ │ Module │ │ Module │ │Module│ │ Proxy │  │
 │  └──────────┘ └────────┘ └────────┘ └──────┘ └───┬───┘  │
-└────────────────────────────────────────────────────┼─────┘
-          │                    │                     │
-          ▼                    ▼                     ▼
-   ┌─────────────┐    ┌──────────────┐   ┌──────────────────┐
-   │  MongoDB    │    │    Redis     │   │  ML Model        │
-   │  (Atlas)   │    │   (Cloud)    │   │  (FastAPI+       │
-   │            │    │              │   │   scikit-learn)  │
-   │ Kullanıcı  │    │ Token kara   │   │  Fiyat tahmini   │
-   │ İlan       │    │ liste (JWT   │   │  RandomForest    │
-   │ Yorum      │    │  logout)     │   │  ml-model-       │
-   │ Liste      │    │              │   │  production-8caa │
-   └─────────────┘    └──────────────┘   └──────────────────┘
+└──────┬─────────────┬───────────┬──────┬────────────┼─────┘
+       │             │           │      │            │
+       ▼             ▼           ▼      ▼            ▼
+   ┌────────┐  ┌──────────┐ ┌──────┐ ┌────────┐ ┌────────────┐
+   │MongoDB │  │ Upstash  │ │Cloud │ │ Notif. │ │ ML Model   │
+   │ Atlas  │  │  Redis   │ │ AMQP │ │  HF    │ │ (FastAPI)  │
+   │        │  │          │ │      │ │ Space  │ │ HF Space   │
+   │ users  │  │ JWT      │ │ msg  │ │  ↓     │ │            │
+   │ cars   │  │ blacklist│ │ queue│ │ FCM    │ │ Random     │
+   │ comm.  │  │ refresh  │ │      │ │ +      │ │ Forest     │
+   │ devices│  │ tokens   │ │      │ │ SMTP   │ │ Pipeline   │
+   └────────┘  └──────────┘ └──────┘ └────────┘ └────────────┘
 ```
+
+Public Web Frontend henüz cloud'a alınmamıştır; mobil uygulama (Android APK) tüm fonksiyonları kapsar.
 
 ### Mimari Desenler
 
@@ -362,7 +362,7 @@ Veritabanı: **MongoDB Atlas** — Koleksiyon ismi: `projctdb`
 
 ## 8. API Endpoint Referansı
 
-**Base URL:** `https://backend-production-f151.up.railway.app`
+**Base URL:** `https://otopusula-backend.onrender.com`
 
 **Tüm isteklerde:**
 - Content-Type: `application/json`
@@ -427,7 +427,7 @@ Authorization: Bearer eyJhbGci...
 ```
 
 > Swagger arayüzünden tüm endpointleri interaktif test edebilirsiniz:
-> `https://backend-production-f151.up.railway.app/swagger`
+> `https://otopusula-backend.onrender.com/swagger`
 
 ---
 
@@ -493,7 +493,7 @@ Kullanıcı                Backend                  Redis
 | `AUDIENCE` | `OtoPusula` | JWT audience |
 | `EXPIRYMINUTES` | `60` | Token geçerlilik süresi (dakika) |
 | `REDIS_CONNECTION_STRING` | `host:port,password=xxx,ssl=True` | Redis bağlantı adresi |
-| `FASTAPI_BASE_URL` | `https://ml-model.up.railway.app` | ML servis URL'i |
+| `FASTAPI_BASE_URL` | `https://burak-sisci-otopusula-ml.hf.space` | ML servis URL'i |
 | `PORT` | `8080` | Backend dinleme portu |
 | `ASPNETCORE_ENVIRONMENT` | `Production` | Ortam modu |
 
@@ -501,7 +501,7 @@ Kullanıcı                Backend                  Redis
 
 | Değişken | Örnek Değer | Açıklama |
 |----------|-------------|----------|
-| `REACT_APP_API_URL` | `https://backend-production-f151.up.railway.app` | Backend API adresi |
+| `REACT_APP_API_URL` | `https://otopusula-backend.onrender.com` | Backend API adresi |
 
 > **Önemli:** React'te environment variable'lar build sırasında kod içine gömülür. URL değiştiyse yeniden build gerekir.
 
@@ -591,38 +591,51 @@ ExceptionHandler → Swagger → CORS → StaticFiles → Authentication → Aut
 
 ---
 
-## 12. Deployment (Railway)
+## 12. Deployment (Render + HF Spaces)
 
-Tüm detaylar için: [DEPLOY.md](DEPLOY.md)
+Tüm detaylar için: [docs/DEPLOY-PUBLIC.md](docs/DEPLOY-PUBLIC.md)
 
-### Hızlı Özet
+### Mimari Özet
 
-3 ayrı servis Railway'e deploy edilir:
+Tüm servisler ücretsiz tier'larda dağıtılmıştır:
 
-```
-1. ML Model   → root directory: ML_Model_V4   → port 8000
-2. Backend    → root directory: backend        → port 8080
-3. Frontend   → root directory: frontend       → port 80 (Nginx)
-```
+| Servis | Platform | URL |
+|--------|----------|-----|
+| Backend (ASP.NET Core 10) | **Render** (Docker web service) | `https://otopusula-backend.onrender.com` |
+| ML Model (FastAPI) | **Hugging Face Spaces** (Docker) | `https://burak-sisci-otopusula-ml.hf.space` |
+| Notification Service (.NET Worker) | **Hugging Face Spaces** (Docker) | `https://burak-sisci-otopusula-notification.hf.space` |
+| ML Model dosyası (1.1 GB) | **Hugging Face Models** | `huggingface.co/burak-sisci/otopusula-model` |
+| MongoDB | **MongoDB Atlas** | M0/Flex cluster |
+| Redis | **Upstash** | Free 10k req/gün |
+| RabbitMQ | **CloudAMQP** | Little Lemur free |
+| Mobil APK | **GitHub Releases + Google Drive mirror** | [v1.0.0](https://github.com/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi/releases/latest) |
 
-**Sıra önemli:** ML Model → Backend → Frontend (her biri bir öncekinin URL'ine ihtiyaç duyar)
+### CI/CD
+
+Her servis için ayrı GitHub Actions workflow'u tanımlanmıştır. Detay: [docs/CICD.md](docs/CICD.md).
 
 ### Sağlık Kontrolü
 
 ```bash
-# Backend çalışıyor mu?
-curl https://backend-production-f151.up.railway.app/health
+# Backend
+curl https://otopusula-backend.onrender.com/health
+# Beklenen: {"durum":"saglikli"}
+
+# ML
+curl https://burak-sisci-otopusula-ml.hf.space/health
 # Beklenen: {"status":"healthy"}
 
-# ML model çalışıyor mu?
-curl https://ml-model-production-8caa.up.railway.app/
+# Notification
+curl https://burak-sisci-otopusula-notification.hf.space/health
+# Beklenen: {"status":"healthy"}
 ```
 
 ### Önemli Notlar
 
-- ML model dosyası `araba_modeli.pkl` **1.1 GB** boyutundadır. Git LFS ile takip edilir. Railway'e push ederken zaman alır.
-- Railway **Hobby plan** ($5/ay) gereklidir. ML model minimum **2 GB RAM** ister.
-- Frontend'de `REACT_APP_API_URL` hem **Variables** hem **Docker Build Arguments** kısmına eklenmelidir.
+- ML model dosyası `araba_modeli.pkl` **1.1 GB**'dır. HF Models repo'sunda saklanır; Spaces build-time'da `huggingface_hub.hf_hub_download` ile indirir (Spaces 1 GB storage limitini aşar).
+- Render free tier 15 dk idle sonra uyur, ilk istek ~30 sn cold start yapar.
+- HF Spaces free tier'da 16 GB RAM tahsis edilir — 1.1 GB model rahat çalışır.
+- Notification Service `firebase-credentials.json`'u secret olarak `FIREBASE_CREDENTIALS_B64` env değişkeninden okur (HF Spaces Settings → Repository secrets).
 
 ---
 
