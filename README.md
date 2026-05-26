@@ -4,6 +4,20 @@
 
 ---
 
+## 📱 Mobil Uygulama — İndir
+
+| Kaynak | Link | Önerilen Cihaz |
+|--------|------|----------------|
+| 🟢 **Google Drive** | [app-release.apk](https://drive.google.com/uc?export=download&id=1soD1iLwStdSldp0vOjDJJi5zpcPIXryM) | **Tüm Android cihazlar** (önerilen) |
+| 📦 **GitHub Release** | [app-release.apk](https://github.com/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi/releases/latest/download/app-release.apk) | Samsung, Pixel, OnePlus, Honor |
+| 🗜️ **ZIP (MIUI/Xiaomi)** | [otopusula-v1.0.0.zip](https://github.com/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi/releases/latest/download/otopusula-v1.0.0.zip) | Xiaomi (MIUI APK kısıtlamasını aşar) |
+
+**Kurulum:** APK'yı indir → Ayarlar → Güvenlik → "Bilinmeyen kaynaklardan kuruluma izin ver" → APK'ya dokun → Yükle.
+
+> İlk istek backend cold start nedeniyle ~30 sn sürebilir (Render free tier). Sonraki istekler anında.
+
+---
+
 ## Proje Hakkında
 
 ![Ürün Tanıtım Görseli](Product.png)
