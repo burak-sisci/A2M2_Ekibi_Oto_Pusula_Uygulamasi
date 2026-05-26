@@ -21,11 +21,16 @@ backend/.env
 notification-service/.env
 notification-service/firebase-credentials.json
 otopusula_mobile/android/app/google-services.json
+otopusula_mobile/otopusula-release.keystore
+otopusula_mobile/android/key.properties
 frontend/.env.local
 frontend/.env.production.local
 
-# ML Model - Git LFS ile takip ediliyor (.gitattributes)
-# ML_Model_V4/araba_modeli.pkl
+# ML Model - geçici olarak LFS pull ile yerelde, repo'ya tekrar girmesin
+ML_Model_V4/araba_modeli.pkl
+
+# Runtime uploads (kullanıcıların yüklediği araç resimleri)
+backend/backend.API/wwwroot/uploads/
 
 # IDE
 .idea/

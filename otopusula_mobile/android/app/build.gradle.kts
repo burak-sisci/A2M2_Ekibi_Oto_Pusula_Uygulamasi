@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,6 +8,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     // Firebase
     id("com.google.gms.google-services")
+}
+
+// android/key.properties dosyasından imza bilgilerini oku (varsa).
+// Dosya yoksa release build debug imzasıyla çalışır (geliştirme rahatlığı).
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) load(FileInputStream(file))
 }
 
 android {
@@ -30,10 +40,25 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystoreProperties.containsKey("storeFile")) {
+                keyAlias       = keystoreProperties["keyAlias"] as String
+                keyPassword    = keystoreProperties["keyPassword"] as String
+                storeFile      = file(keystoreProperties["storeFile"] as String)
+                storePassword  = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Faz 5'te keystore eklenecek; şimdilik debug imzasıyla çalışır
-            signingConfig = signingConfigs.getByName("debug")
+            // key.properties varsa release imzası, yoksa debug imzası ile yedek
+            signingConfig = if (rootProject.file("key.properties").exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
