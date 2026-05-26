@@ -1,0 +1,44 @@
+# Render Infrastructure as Code
+# Bu dosyayı Render → New → Blueprint olarak deploy edersen otomatik service oluşturur.
+# Tüm secret/env değerleri Render web UI'sinden manuel girilir (sync: false).
+
+services:
+  - type: web
+    name: otopusula-backend
+    runtime: docker
+    region: frankfurt
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    autoDeploy: true
+    branch: main
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: PORT
+        value: "10000"   # Render free tier varsayılan port
+      - key: CONNECTION_STRING
+        sync: false      # Atlas connection string — manuel
+      - key: DATABASE_NAME
+        value: projctdb
+      - key: JWT_SECRET
+        sync: false
+      - key: ISSUER
+        value: OtoPusula
+      - key: AUDIENCE
+        value: OtoPusula
+      - key: EXPIRYMINUTES
+        value: "60"
+      - key: ACCESS_TOKEN_MINUTES
+        value: "15"
+      - key: REFRESH_TOKEN_DAYS
+        value: "30"
+      - key: REDIS_CONNECTION_STRING
+        sync: false      # Upstash
+      - key: RABBITMQ_CONNECTION_STRING
+        sync: false      # CloudAMQP
+      - key: FASTAPI_BASE_URL
+        sync: false      # HF Spaces ML URL'i
+      - key: FRONTEND_URL
+        value: https://otopusula-backend.onrender.com

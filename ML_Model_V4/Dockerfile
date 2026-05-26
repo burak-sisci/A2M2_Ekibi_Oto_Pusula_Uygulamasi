@@ -7,13 +7,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Model dosyası HF Spaces LFS ile bu image'a kopyalanır (1.1 GB).
 COPY . .
 
-# Railway Git LFS desteklemiyor, model dosyasini GitHub'dan indir
-RUN curl -L -o araba_modeli.pkl \
-    "https://media.githubusercontent.com/media/burak-sisci/A2M2_Ekibi_Oto_Pusula_Uygulamasi/main/ML_Model_V4/araba_modeli.pkl" \
-    && echo "Model indirildi: $(wc -c < araba_modeli.pkl) bytes"
+# HF Spaces default port 7860
+ENV PORT=7860
+EXPOSE 7860
 
-EXPOSE 8000
-
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT}"]
