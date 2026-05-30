@@ -94,9 +94,12 @@ services:
       ISSUER: ${ISSUER}
       AUDIENCE: ${AUDIENCE}
       EXPIRYMINUTES: ${EXPIRYMINUTES}
+      ACCESS_TOKEN_MINUTES: ${ACCESS_TOKEN_MINUTES}
+      REFRESH_TOKEN_DAYS: ${REFRESH_TOKEN_DAYS}
       REDIS_CONNECTION_STRING: "redis:6379,abortConnect=False"
       RABBITMQ_CONNECTION_STRING: "amqp://guest:guest@rabbitmq:5672/"
       FASTAPI_BASE_URL: "http://ai-service:8000"
+      FRONTEND_URL: "http://localhost:3000"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -106,6 +109,33 @@ services:
         condition: service_healthy
       ai-service:
         condition: service_started
+    networks:
+      - otopusula-net
+    restart: unless-stopped
+
+  # ── Notification Service ──────────────────────────────────────
+  notification-service:
+    build:
+      context: ../notification-service
+      dockerfile: Dockerfile
+    container_name: otopusula-notification
+    ports:
+      - "5000:7860"
+    environment:
+      PORT: "7860"
+      CONNECTION_STRING: "mongodb://mongodb:27017/${DATABASE_NAME}"
+      DATABASE_NAME: ${DATABASE_NAME}
+      RABBITMQ_CONNECTION_STRING: "amqp://guest:guest@rabbitmq:5672/"
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - otopusula-net
     restart: unless-stopped
