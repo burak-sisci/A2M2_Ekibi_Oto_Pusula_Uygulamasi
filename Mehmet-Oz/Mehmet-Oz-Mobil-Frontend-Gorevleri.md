@@ -1,7 +1,5 @@
 # Mehmet Öz'ün Mobil Frontend Görevleri
 
-**Mobile Front-end Demo Videosu:** [Link buraya eklenecek](https://example.com)
-
 > **Modül C — Özel Listeler ve Favoriler** kapsamındaki 7 endpoint için Flutter mobil arayüz tasarımı ve implementasyonu.
 
 ---

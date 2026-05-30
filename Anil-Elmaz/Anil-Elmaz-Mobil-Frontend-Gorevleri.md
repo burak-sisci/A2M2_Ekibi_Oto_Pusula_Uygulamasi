@@ -1,7 +1,5 @@
 # Anıl Elmaz'ın Mobil Frontend Görevleri
 
-**Mobile Front-end Demo Videosu:** [Link buraya eklenecek](https://example.com)
-
 > **Modül B — Araç İlanları ve Yapay Zeka** kapsamındaki 6 endpoint için Flutter mobil arayüz tasarımı ve implementasyonu.
 
 ---

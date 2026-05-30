@@ -1,7 +1,5 @@
 # Anıl Elmaz'ın Mobil Backend Görevleri
 
-**Mobil Front-end ile Back-end Bağlanmış Test Videosu:** [Link buraya eklenecek](https://example.com)
-
 > **Modül B — Araç İlanları ve Yapay Zeka** kapsamındaki 6 endpoint için Flutter ↔ ASP.NET Core 10 backend bağlantı katmanı.
 
 ---

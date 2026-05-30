@@ -1,7 +1,5 @@
 # Mehmet Uludağ'ın Mobil Frontend Görevleri
 
-**Mobile Front-end Demo Videosu:** [Link buraya eklenecek](https://example.com)
-
 > **Modül D — Etkileşim ve İletişim (Yorum ve Paylaşım)** kapsamındaki 6 endpoint için Flutter mobil arayüz tasarımı ve implementasyonu.
 
 ---

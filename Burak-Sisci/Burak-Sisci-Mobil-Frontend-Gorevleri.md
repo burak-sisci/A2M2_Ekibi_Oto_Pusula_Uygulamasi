@@ -1,7 +1,5 @@
 # Burak Şişci'nin Mobil Frontend Görevleri
 
-**Mobile Front-end Demo Videosu:** [Link buraya eklenecek](https://example.com)
-
 > **Modül A — Kullanıcı ve Kimlik Yönetimi** kapsamındaki 6 endpoint için Flutter mobil arayüz tasarımı ve implementasyonu.
 
 ---
