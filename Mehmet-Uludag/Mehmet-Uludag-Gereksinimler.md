@@ -17,6 +17,6 @@
 5. Yorum Silme
     * API Metodu: DELETE /comments/{commentId}
     * Açıklama: Kullanıcının kendi yaptığı bir yorumu sistemden kalıcı olarak silmesini sağlar.
-6. Kullanıcının Kendi Yorumlarını Listeleme
-    * API Metodu: GET /users/{userId}/comments
-    * Açıklama: Bir kullanıcının profil sayfasına girdiğinde, platformdaki farklı ilanlara yaptığı tüm geçmiş yorumları tek bir liste halinde görmesini sağlar.
+6. Yorum Beğenme / Beğeniyi Geri Alma
+    * API Metodu: POST /comments/{commentId}/like  ve  DELETE /comments/{commentId}/like
+    * Açıklama: Kullanıcıların başka kullanıcıların yorumlarını beğenmesini veya verdikleri beğeniyi geri almasını sağlar. Bir yorumun toplam beğeni sayısı ile beğenenler listesi anlık olarak güncellenir; aynı kullanıcı aynı yorumu birden fazla kez beğenemez (idempotent).

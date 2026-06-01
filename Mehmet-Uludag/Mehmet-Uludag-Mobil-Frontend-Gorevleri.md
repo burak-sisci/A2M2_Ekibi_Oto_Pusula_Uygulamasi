@@ -121,29 +121,35 @@
   - Like'lar (`likedByUsers`) de silinir backend tarafında
   - Local state: `_comments.removeWhere((c) => c.id == commentId)`
 
-## 6. Kullanıcının Kendi Yorumlarını Listeleme
-- **API Endpoint:** `GET /users/{userId}/comments`
-- **Görev:** Kullanıcının profil sayfasında geçmiş yorumlarını gösterme
+## 6. Yorum Beğenme / Beğeniyi Geri Alma
+- **API Endpoint:**
+  - `POST /comments/{commentId}/like` — beğeni ekle
+  - `DELETE /comments/{commentId}/like` — beğeniyi geri al
+- **Görev:** Yorum kartlarında kalp ikonuyla beğeni / beğeniyi geri alma etkileşimi
 - **UI Bileşenleri:**
-  - Profil sayfasında "Yorumlarım" sekmesi (`TabBar` veya ayrı ekran)
-  - Yorum kartları (her birinde):
-    - Yorum metni
-    - Yapılan araç bilgisi (marka + model, link)
-    - Yorum tarihi (timeago)
-    - Beğeni sayısı
-    - "Düzenle" / "Sil" butonları
-  - Empty state: "Henüz hiç yorum yapmadın"
-  - Pull-to-refresh
+  - Her yorum kartının altında kalp ikonu (`Icons.favorite_border` / `Icons.favorite`)
+  - Beğeni sayısı yazısı (örn. "12 beğeni")
+  - İkon rengi: beğenilmediğinde gri, beğenildiğinde kırmızı/pembe
+  - Beğeni durumu `likedByUsers` array'inde `currentUserId` var mı kontrolüyle belirlenir
+  - Hızlı animasyon (`AnimatedSwitcher` ile ikon dönüşümü, hafif "pop" efekti)
+- **Form / Etkileşim Mantığı:**
+  - Kalp ikonuna tıkla → mevcut durumun tersini API'ye gönder
+    - Daha önce beğenilmiş ise → `DELETE` (unlike)
+    - Beğenilmemiş ise → `POST` (like)
+  - Kendi yorumunu beğeneme/beğeneme kuralı yok (kullanıcı kendi yorumunu da beğenebilir)
+  - Bir kullanıcı aynı yorumu birden fazla kez beğenemez (backend idempotent: ikinci POST sessizce ignore edilir)
 - **Kullanıcı Deneyimi:**
-  - Karta tıklayınca aracın yorumlar sayfasına götürür (yorumun bulunduğu yere scroll)
-  - Yorumların tarih sırasıyla listelenmesi (en yeni üstte)
-  - Loading skeleton kartları
+  - **Optimistic update:** Kullanıcı tıklayınca UI'da ikon ve sayı **anında** değişir, sonra API çağrısı gider
+  - Hata olursa rollback (ikon eski hale döner) + `SnackBar` "Beğenilemedi, tekrar dene"
+  - Çift tıklama korunması (`debounce`) — kullanıcı hızlı hızlı tıklarsa sadece son istek gider
+  - Bağlantı yoksa "Çevrimdışısınız" `SnackBar`
 - **Teknik Detaylar:**
-  - `UserCommentsViewModel`
-  - `CommentRepository.getByUserId(userId)`
-  - Response: `List<Comment>` + her birinin `car: { brand, model }` populated
-  - Backend MongoDB aggregation: `comments.userId` + `$lookup` ile car detayları
-  - `comment_userId` index (backend MongoDB) ile hızlı sorgu
+  - `CommentsViewModel.toggleLike(commentId)`
+  - `CommentRepository.likeComment(commentId)` ve `unlikeComment(commentId)`
+  - Endpoint sabitleri: `ApiEndpoints.commentLike(commentId)`
+  - Response payload: `{ yorumId, begeniSayisi, begendimMi }` — UI bu cevapla `Comment.likeCount` ve `likedByUsers` field'larını günceller
+  - Local state: ilgili `Comment` objesi `notifyListeners()` ile yeniden render
+  - JWT Bearer otomatik (`AuthInterceptor`)
 
 ---
 

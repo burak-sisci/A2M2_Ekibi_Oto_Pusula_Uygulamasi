@@ -90,21 +90,29 @@
   - Backend Redis cache: `comments:car:{carId}` invalidate
   - Mobil tarafı `AnimatedList.removeItem` ile animasyonlu silme
 
-## 6. Kullanıcının Kendi Yorumlarını Listeleme Servisi
-- **API Endpoint:** `GET /users/{userId}/comments`
-- **Görev:** Kullanıcının yaptığı tüm yorumları tarih sırasıyla profil sayfasında çekme
+## 6. Yorum Beğenme / Beğeniyi Geri Alma Servisi
+- **API Endpoint:**
+  - `POST /comments/{commentId}/like`
+  - `DELETE /comments/{commentId}/like`
+- **Görev:** Yoruma beğeni ekleme veya geri alma + beğeni sayısı senkronizasyonu
 - **İşlevler:**
-  - `Dio.get('/users/{userId}/comments')` çağrısı
-  - Response: `List<Comment>` + her birinde populated `car: { id, brand, model }`
-  - Backend MongoDB aggregation:
-    - `comments` koleksiyonu filter (`userId`)
-    - `$lookup` ile `cars` koleksiyonundan brand/model join
-    - `Sort` createdAt descending
+  - Mevcut beğeni durumunu `Comment.likedByUsers` listesinden okuma
+  - Eğer kullanıcı listede yoksa: `Dio.post('/comments/{commentId}/like')` ile beğeni ekle
+  - Listede varsa: `Dio.delete('/comments/{commentId}/like')` ile beğeniyi kaldır
+  - Backend response'tan güncel `begeniSayisi` ve `begendimMi` bilgilerini al → UI state'i güncelle
+  - Backend MongoDB tarafında atomic update:
+    - LikeCommentCommand: `$addToSet` ile `likedByUsers` array'ine kullanıcı eklenir + `$inc` ile likeCount artar
+    - UnlikeCommentCommand: `$pull` ile kullanıcı çıkarılır + `$inc -1` ile sayaç azalır
+  - Idempotent: aynı POST tekrar gelirse `$addToSet` sayesinde duplicate olmaz, sayaç aynı kalır
 - **Teknik Detaylar:**
-  - Repository: `CommentRepository.getByUserId(userId)`
-  - `comment_userId` index (backend MongoDB) ile hızlı sorgu
-  - Yetki: kendi yorumları için userId match (başkasının yorumlarına bakma sınırlı — gelecek özellik)
-  - Cache: kısa TTL, çünkü kullanıcı sık yorum eklediğinde stale olabilir
+  - HTTP: **Dio 5.7**
+  - Repository: `CommentRepository.likeComment(commentId)` + `unlikeComment(commentId)`
+  - Backend: `LikeCommentCommand` + `UnlikeCommentCommand` (MediatR handler)
+  - State: `CommentsViewModel.toggleLike(commentId)` — optimistic update + rollback on error
+  - JWT Bearer otomatik (`AuthInterceptor`)
+  - Yetki: backend authenticated user gerekli (`[Authorize]` filter)
+  - Race condition koruması: backend MongoDB atomic operation kullanıyor (`$addToSet`/`$pull`)
+  - Hata yönetimi: 401 (refresh akışı), 404 (yorum silinmiş), 5xx (retry mesajı)
 
 ---
 
