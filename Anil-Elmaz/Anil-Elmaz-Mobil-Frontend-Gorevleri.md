@@ -128,26 +128,44 @@
   - `cached_network_image` ile resim caching
   - `Share.share(link)` ile native share sheet (`share_plus` veya GoRouter deep link)
 
-## 5. İlan Güncelleme Ekranı
-- **API Endpoint:** `PUT /cars/{carId}`
-- **Görev:** İlan sahibinin araç fiyatını veya açıklamasını düzenlemesi
+## 5. Araç Görseli Yükleme Ekranı
+- **API Endpoint:** `POST /api/upload/image`
+- **Görev:** İlan oluşturma akışı içinde araç fotoğraflarının seçilip sunucuya yüklenmesi
 - **UI Bileşenleri:**
-  - "İlanı Düzenle" başlığı
-  - CarCreate ekranıyla aynı form layout, **mevcut değerlerle dolu**
-  - Sadece izin verilen alanlar düzenlenebilir (fiyat, açıklama, konum, resimler)
-  - "Kaydet" / "İptal" butonları
+  - "Fotoğraf Ekle" butonu (`OutlinedButton.icon` + kamera ikonu)
+  - Yüklü resimlerin grid önizlemesi (`GridView` 3 kolonlu, her kart 100×100 px)
+  - Her resim kartının köşesinde "Sil" ikonu (`Icons.close` daire içinde)
+  - Yükleme sırasında her kart üzerinde `CircularProgressIndicator` overlay
+  - "Galeriden Seç" / "Kameradan Çek" seçenek sheet'i (`showModalBottomSheet`)
+  - Resim sayacı: "3 / 8 fotoğraf" (üst sağda)
 - **Form Validasyonu:**
-  - Fiyat pozitif
-  - Açıklama max 1000 karakter
+  - En az 1, en fazla 8 fotoğraf (`AppConstants.maxCarImages`)
+  - Her dosya max 5 MB (`AppConstants.maxImageSizeBytes`)
+  - Desteklenen formatlar: JPG, PNG, HEIC
+  - 8 limite ulaşıldığında "Fotoğraf Ekle" butonu disabled
 - **Kullanıcı Deneyimi:**
-  - Değişiklik yapılmadan "Kaydet" disabled (`isDirty` kontrolü)
-  - Optimistic update + rollback
-  - Unsaved changes uyarısı (`WillPopScope`)
+  - Galeri seçimi: `image_picker` ile native iOS/Android picker açılır
+  - Çoklu seçim destekli (`pickMultiImage`)
+  - Yükleme progress'i her kartta ayrı ayrı (paralel upload)
+  - Başarılı yükleme → kart border'ı yeşil yanıp söner, sonra normal
+  - Hata → kart kırmızı border + retry ikonu, üzerine tıklayınca tekrar dene
+  - Yüklü resim kartına tıklayınca tam ekran önizleme (`PhotoView`)
+  - "Geri" butonuyla çıkışta yüklenmemiş resimler için uyarı
+- **Akış Adımları:**
+  1. CarCreate ekranında "Fotoğraf Ekle" tıkla
+  2. BottomSheet açılır: "Galeri" veya "Kamera"
+  3. Seçim sonrası dosya(lar) yerel state'e eklenir, "yükleniyor" durumu başlar
+  4. Arka planda `POST /api/upload/image` çağrısı (her dosya için ayrı)
+  5. Başarılı upload → response'tan dönen URL state'e eklenir
+  6. İlan submit'te bu URL listesi `resimler` alanı olarak `POST /cars`'a gönderilir
 - **Teknik Detaylar:**
-  - `CarUpdateViewModel`
-  - `CarRepository.update(carId, CarUpdateDto)` → `Dio.put('/cars/{carId}')`
-  - Backend yetki kontrolü: sadece `ownerId == currentUserId` güncelleyebilir
-  - 403 Forbidden → "Bu ilanı düzenleme yetkin yok"
+  - **`image_picker` ^1.1.2** paketi (`pubspec.yaml`)
+  - State: `CarCreateViewModel` — `_pickedImages: List<XFile>`, `_uploadedUrls: List<String>`, `_uploading: bool`
+  - HTTP: **Dio** + `FormData.fromMap({'file': MultipartFile.fromFile(path)})` (multipart/form-data)
+  - Repository: `CarRepository.uploadImage(imagePath)` → URL string döner
+  - JWT Bearer otomatik (`AuthInterceptor`)
+  - Image picker `imageQuality: 85` ile otomatik sıkıştırma
+  - Backend wwwroot/uploads/ klasörüne kaydeder, public URL döner
 
 ## 6. İlan Silme
 - **API Endpoint:** `DELETE /cars/{carId}`

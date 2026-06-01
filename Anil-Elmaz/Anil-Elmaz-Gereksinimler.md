@@ -14,9 +14,9 @@
 4. İlan Detayı Görüntüleme
     * API Metodu: GET /cars/{carId}
     * Açıklama: Seçilen tek bir araca ait tüm resimlerin, donanım detaylarının ve açıklama metinlerinin getirilmesini sağlar.
-5. İlan Güncelleme
-    * API Metodu: PUT /cars/{carId}
-    * Açıklama: İlan sahibinin araç fiyatını veya açıklamasını sonradan düzenlemesini sağlar.
+5. Araç Görseli Yükleme
+    * API Metodu: POST /api/upload/image
+    * Açıklama: Kullanıcının ilan oluştururken telefon galerisinden seçtiği araç fotoğraflarının sunucuya yüklenmesini sağlar. Yüklenen her görsel için benzersiz bir URL üretilir; bu URL'ler ilan oluşturma isteğinin `resimler` alanına eklenerek araçla ilişkilendirilir. Aynı ilana birden fazla görsel (en fazla 8) yüklenebilir.
 6. İlan Silme
     * API Metodu: DELETE /cars/{carId}
     * Açıklama: Satışı gerçekleşen veya kaldırılmak istenen ilanın sistemden silinmesini sağlar.

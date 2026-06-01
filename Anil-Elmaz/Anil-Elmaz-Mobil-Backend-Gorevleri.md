@@ -73,21 +73,34 @@
   - `cached_network_image` ile resim caching (URL üzerinden)
   - Yetki kontrolü: `car.ownerId == currentUserId` ise "Düzenle/Sil" butonları görünür
 
-## 5. İlan Güncelleme Servisi
-- **API Endpoint:** `PUT /cars/{carId}`
-- **Görev:** İlan sahibinin araç bilgilerini güncellemesi
+## 5. Araç Görseli Yükleme Servisi
+- **API Endpoint:** `POST /api/upload/image`
+- **Görev:** İlan oluşturma akışında telefonun galerisinden seçilen araç fotoğraflarını sunucuya yükleme servisi
 - **İşlevler:**
-  - Düzenleme ekranından gelen değişen alanları toplama (`isDirty` filter)
-  - `Dio.put('/cars/{carId}', data: dto.toJson())`
-  - Başarılı update sonrası ViewModel state güncellenir, detay sayfası refresh
-  - Optimistic update: kaydet basılınca UI hemen güncel, hata olursa rollback
+  - `image_picker` ile telefondan galeri/kamera seçimi (`pickMultiImage` veya `pickImage`)
+  - Seçilen her dosya için `Dio.post('/api/upload/image', data: FormData)` çağrısı
+  - `FormData.fromMap({'file': await MultipartFile.fromFile(imagePath)})` — `multipart/form-data` body
+  - Backend cevabı: yüklenen dosyanın public URL'i (örn. `/uploads/<guid>.jpg`)
+  - URL'ler ViewModel state'inde `_uploadedUrls: List<String>` listesinde tutulur
+  - İlan submit (`POST /cars`) sırasında bu URL listesi `resimler` alanı olarak ilana eklenir
+  - Paralel upload: 4 dosyaya kadar eşzamanlı (`Future.wait`)
+  - Hata durumunda tek dosya retry (diğerleri etkilenmez)
 - **Teknik Detaylar:**
-  - `CarUpdateViewModel`
-  - `CarRepository.update(carId, CarUpdateDto)`
-  - Partial update: sadece değişen alanlar gönderilir
-  - Backend yetki: `car.ownerId == User.NameIdentifier` değilse 403
-  - 401 → AuthInterceptor refresh akışını otomatik yönetir
-  - Backend Redis cache invalidation (`cars:list:*` keys temizlenir)
+  - HTTP: **Dio 5.7** + `FormData` (multipart/form-data otomatik content-type)
+  - Repository: `CarRepository.uploadImage(imagePath) → Future<String>` (URL döner)
+  - State: `CarCreateViewModel._pickedImages`, `_uploadedUrls`, `_uploading: bool`
+  - **`image_picker` ^1.1.2** paketi — Android `MediaStore` + iOS `PHPicker` native API'leri
+  - JWT Bearer otomatik (`AuthInterceptor`)
+  - Backend: `UploadController.cs` → `[HttpPost("image")]` — `IFormFile` parse + GUID isimli dosya `wwwroot/uploads/` klasörüne yazılır
+  - Static file serving: backend `app.UseStaticFiles()` ile `/uploads/*.jpg` URL'leri public servis edilir
+  - Dosya boyutu kontrolü: backend `[RequestSizeLimit(5_242_880)]` (5 MB)
+  - Desteklenen MIME types: `image/jpeg`, `image/png`, `image/heic`
+  - 401 → AuthInterceptor refresh akışı
+  - 413 (Payload Too Large) → "Dosya çok büyük, küçük resim seç"
+  - Yükleme sonrası ilan oluşturma akışı:
+    1. Tüm resimler `/api/upload/image`'a yüklenir, URL listesi toplanır
+    2. `POST /cars` çağrısında `dto.toJson(uploadedUrls)` ile birlikte gönderilir
+    3. Backend `Car.resimler` alanına URL'ler kaydedilir
 
 ## 6. İlan Silme Servisi
 - **API Endpoint:** `DELETE /cars/{carId}`
